@@ -1,69 +1,88 @@
 <!DOCTYPE html>
-  <html lang="en">
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LaCleo Intelligence Console</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaCleo Intelligence Console</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
+</head>
+<body>
 
-  <div id="viewLogin" class="view">
+<div id="viewLogin" class="view">
   <div class="auth-box">
-  <div class="brand"><div class="b-icon">L</div><span>LaCleo Intelligence</span></div>
-  <h2>Sign in to Console</h2>
-  <p class="sub">Enter your corporate business email. Free email domains (Gmail, Yahoo, Outlook) are restricted.</p>
-  <div class="err-alert" id="domainErr">
-  &#9888;&#65039; <strong>Personal Email Restricted:</strong> Please enter your official corporate email (e.g. name@company.com). Free email domains like Gmail and Yahoo are not supported.
+    <div class="brand"><div class="b-icon">L</div><span>LaCleo Intelligence</span></div>
+    <h2>Sign in to Console</h2>
+    <p class="sub">Enter your corporate business email. Free email domains (Gmail, Yahoo, Outlook) are restricted.</p>
+    <div class="err-alert" id="domainErr">
+      &#9888;&#65039; <strong>Personal Email Restricted:</strong> Please enter your official corporate email (e.g. name@company.com). Free email domains like Gmail and Yahoo are not supported.
+    </div>
+    <form id="loginForm">
+      <label class="in-lbl">Corporate Work Email</label>
+      <input type="email" class="in-txt" id="emailIn" placeholder="name@company.com" required>
+      <button type="submit" class="btn-go">Enter Console &rarr;</button>
+    </form>
   </div>
-  <form id="loginForm">
-  <label class="in-lbl">Corporate Work Email</label>
-<input type="email" class="in-txt" id="emailIn" placeholder="name@company.com" required>
-  <button type="submit" class="btn-go">Enter Console &rarr;</button>
-  </form>
-  </div>
-  </div>
-  <div id="viewDashboard" class="view" hidden>
+</div>
+
+<div id="viewDashboard" class="view" hidden>
   <header class="topbar">
-  <div class="brand"><div class="b-icon">L</div><span>LaCleo Intelligence</span></div>
-  <div class="user-chip">
-  <div class="avatar" id="userAvatar">--</div>
-  <span id="userEmailLabel"></span>
-  <button id="signOutBtn" class="btn-ghost">Sign out</button>
-  </div>
+    <div class="brand"><div class="b-icon">L</div><span>LaCleo Intelligence</span></div>
+    <div class="user-chip">
+      <div class="avatar" id="userAvatar">--</div>
+      <span id="userEmailLabel"></span>
+      <button id="signOutBtn" class="btn-ghost">Sign out</button>
+    </div>
   </header>
 
   <main class="main">
-  <section class="panel new-job-panel">
-  <h3>Start a New Lead Search</h3>
-<form id="jobForm">
-<label class="in-lbl">Client Context / Website / ICP</label>
-<textarea id="icpIn" class="in-txt" rows="3" placeholder="e.g. https://yourcompany.com — we sell inventory software to mid-market retailers" required></textarea>
-<div class="form-row">
-<div>
-<label class="in-lbl">Lead Count</label>
-  <input type="number" id="formCount" class="in-txt" value="5" min="1" max="50">
-  </div>
-  <button type="submit" class="btn-go" id="btnSubmit">Run Search &rarr;</button>
-  </div>
-  </form>
-  </section>
+    <section class="panel new-job-panel">
+      <h3>Start a New Lead Search</h3>
+      <form id="jobForm">
+        <label class="in-lbl">Client Context / Website / ICP</label>
+        <textarea id="icpIn" class="in-txt" rows="3" placeholder="e.g. https://yourcompany.com — we sell inventory software to mid-market retailers" required></textarea>
+        <div class="form-row">
+          <div>
+            <label class="in-lbl">Lead Count</label>
+            <input type="number" id="formCount" class="in-txt" value="5" min="1" max="50">
+          </div>
+          <div>
+            <label class="in-lbl">Minimum ICP Score</label>
+            <input type="number" id="formMinIcp" class="in-txt" value="90" min="0" max="100">
+          </div>
+        </div>
+        <div class="chk-row">
+          <label class="chk-lbl"><input type="checkbox" id="formDm" checked> Find decision-maker contact info</label>
+          <label class="chk-lbl"><input type="checkbox" id="formMaxli" checked> Prioritize LinkedIn profiles</label>
+        </div>
+        <button type="submit" class="btn-go" id="btnSubmit">Run Search &rarr;</button>
+      </form>
+    </section>
 
-  <section class="panel live-panel" id="livePanel" hidden>
-  <h3>Live Run <span class="stage-text" id="liveStage">Starting...</span></h3>
-  <div class="progress-track"><div class="progress-fill" id="liveProgress"></div></div>
-  <div class="cards-grid" id="cardsGrid"></div>
-  </section>
+    <section class="panel live-panel" id="livePanel" hidden>
+      <h3>Live Run <span class="stage-text" id="liveStage">Starting...</span></h3>
+      <div class="progress-track"><div class="progress-fill" id="liveProgress"></div></div>
+      <div class="cards-grid" id="cardsGrid"></div>
+    </section>
 
-  <section class="panel">
-  <h3>Your Runs</h3>
-  <div id="taskList" class="task-list"></div>
-  </section>
+    <section class="panel">
+      <h3>Your Runs</h3>
+      <div id="taskList" class="task-list"></div>
+    </section>
   </main>
-  </div>
+</div>
 
-  <script src="app.js"></script>
-  </body>
-  </html>
-  
+<div id="leadsModal" class="modal-overlay" hidden>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Lead Details</h3>
+      <button id="closeLeadsModal" class="btn-ghost">Close</button>
+    </div>
+    <div id="modalSheetLink" class="modal-sheet-link"></div>
+    <div id="modalLeadsList" class="leads-list"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
