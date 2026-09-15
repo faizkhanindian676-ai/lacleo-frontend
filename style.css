@@ -52,6 +52,7 @@ p.sub { font-size: 13.5px; color: #64748b; line-height: 1.5; margin-bottom: 22px
 .lead-card .company { font-weight: 700; font-size: 14px; }
 .lead-card .dm { font-size: 12.5px; color: #475569; margin-top: 2px; }
 .lead-card .meta { font-size: 11.5px; color: #94a3b8; }
+.lc-trigger { font-size: 11px; color: #475569; font-style: italic; line-height: 1.4; margin-top: 6px; }
 .lead-card .icp-badge { position: absolute; top: 10px; right: 10px; font-size: 10.5px; font-weight: 700; background: #0f172a; color: #fff; padding: 3px 7px; border-radius: 20px; }
 .scan-laser { display: none; position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #6366f1, transparent); top: 0; animation: laserSweep 1.6s linear infinite; }
 .lead-card.blurry .scan-laser { display: block; }

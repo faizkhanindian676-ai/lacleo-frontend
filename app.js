@@ -214,6 +214,7 @@ function startLiveRun(jobId, targetCount) {
           </div>
         </div>
         <div class="meta">-</div>
+        <div class="lc-trigger"></div>
       </div>`;
     grid.appendChild(card);
   }
@@ -280,6 +281,8 @@ function revealCard(idx, lead) {
   card.querySelector('.company').textContent = n.company || 'Unknown company';
   card.querySelector('.dm').textContent = [n.name, n.title].filter(Boolean).join(' — ') || 'Decision maker unavailable';
   card.querySelector('.meta').textContent = n.location || n.domain || '';
+  const triggerEl = card.querySelector('.lc-trigger');
+  if (triggerEl) triggerEl.textContent = n.trigger || n.hook || '';
   const badge = card.querySelector('.icp-badge');
   if (badge) badge.textContent = n.icp ? (n.icp + '%') : '';
   if (n.li) {
