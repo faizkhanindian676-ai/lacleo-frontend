@@ -121,12 +121,60 @@
         <div class="cockpit-panel">
           <form id="jobForm">
             <div class="field-row">
-              <label>Client context / website / ICP</label>
-              <textarea class="field-in" id="icpIn" required placeholder="Paste your company URL, or describe your ICP directly…"></textarea>
+              <label>Company website (optional)</label>
+              <input class="field-in" type="text" id="websiteIn" placeholder="https://www.yourcompany.com/">
               <div class="chip-row">
-                <span class="chip" onclick="document.getElementById('icpIn').value=window.location.origin + '/'">Our site</span>
+                <span class="chip" onclick="document.getElementById('websiteIn').value=window.location.origin + '/'">Use our site</span>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <label>ICP description <span id="icpOptionalTag">(optional if website given)</span></label>
+              <textarea class="field-in" id="icpIn" placeholder="Describe your ideal customer profile — industry, company type, who you sell to…"></textarea>
+              <div class="chip-row">
                 <span class="chip" onclick="document.getElementById('icpIn').value='Series A-C B2B SaaS, $5-25M ARR, hiring sales leaders'">SaaS startups</span>
                 <span class="chip" onclick="document.getElementById('icpIn').value='Shopify Plus DTC brands, $20M+ GMV'">Shopify Plus DTC</span>
+              </div>
+              <div class="field-hint">Give a website, an ICP description, or both — at least one is required.</div>
+            </div>
+
+            <button type="button" class="chip" id="toggleAdvancedBtn" onclick="toggleAdvanced()" style="margin-bottom:18px;">+ Add targeting details (revenue, titles, industry…)</button>
+
+            <div id="advancedFields" style="display:none; margin-bottom:6px;">
+              <div class="field-hint" style="margin-bottom:12px;">Optional — but whatever you fill in here is enforced strictly: a lead outside these bounds is rejected automatically, not just scored lower.</div>
+              <div class="grid-2 field-row">
+                <div>
+                  <label>Revenue min ($M)</label>
+                  <input class="field-in num" type="number" id="revMin" min="0" placeholder="e.g. 5">
+                </div>
+                <div>
+                  <label>Revenue max ($M)</label>
+                  <input class="field-in num" type="number" id="revMax" min="0" placeholder="e.g. 100">
+                </div>
+              </div>
+              <div class="grid-2 field-row">
+                <div>
+                  <label>Headcount min</label>
+                  <input class="field-in num" type="number" id="hcMin" min="0" placeholder="e.g. 50">
+                </div>
+                <div>
+                  <label>Headcount max</label>
+                  <input class="field-in num" type="number" id="hcMax" min="0" placeholder="e.g. 1000">
+                </div>
+              </div>
+              <div class="field-row">
+                <label>Target decision-maker titles</label>
+                <input class="field-in" type="text" id="targetTitles" placeholder="e.g. CTO, VP Engineering, VP DevOps">
+              </div>
+              <div class="grid-2 field-row">
+                <div>
+                  <label>Industry / sector</label>
+                  <input class="field-in" type="text" id="industryIn" placeholder="e.g. Manufacturing, Semiconductors">
+                </div>
+                <div>
+                  <label>HQ region</label>
+                  <input class="field-in" type="text" id="hqIn" placeholder="e.g. USA">
+                </div>
               </div>
             </div>
 

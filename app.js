@@ -70,6 +70,14 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 1800);
 }
 
+function toggleAdvanced() {
+  const el = $('advancedFields');
+  const btn = $('toggleAdvancedBtn');
+  const show = el.style.display === 'none';
+  el.style.display = show ? 'block' : 'none';
+  btn.textContent = show ? '− Hide targeting details' : '+ Add targeting details (revenue, titles, industry…)';
+}
+
 function onSignOut() {
   stopPolling();
   clearStoredEmail();
@@ -188,12 +196,25 @@ async function onDeleteClick(jobId) {
 
 async function onJobSubmit(e) {
   e.preventDefault();
-  const icp = $('icpIn').value.trim();
+  const website = $('websiteIn').value.trim();
+  const icpText = $('icpIn').value.trim();
   const count = parseInt($('formCount').value, 10) || 5;
   const minicp = parseInt($('formMinIcp').value, 10) || 90;
   const dm = $('formDm').checked;
   const maxli = $('formMaxli').checked;
-  if (!icp) return;
+  const revMin = $('revMin').value.trim();
+  const revMax = $('revMax').value.trim();
+  const hcMin = $('hcMin').value.trim();
+  const hcMax = $('hcMax').value.trim();
+  const targetTitles = $('targetTitles').value.trim();
+  const industry = $('industryIn').value.trim();
+  const hqRegion = $('hqIn').value.trim();
+
+  if (!website && !icpText) {
+    toast('Give a website, an ICP description, or both');
+    return;
+  }
+  const icp = [website, icpText].filter(Boolean).join('\n\n');
 
   const btn = $('btnSubmit');
   btn.disabled = true;
@@ -207,6 +228,13 @@ async function onJobSubmit(e) {
     params.append('minicp', minicp);
     if (dm) params.append('dm', 'yes');
     if (maxli) params.append('maxli', 'yes');
+    if (revMin) params.append('revenue_min', revMin);
+    if (revMax) params.append('revenue_max', revMax);
+    if (hcMin) params.append('headcount_min', hcMin);
+    if (hcMax) params.append('headcount_max', hcMax);
+    if (targetTitles) params.append('target_titles', targetTitles);
+    if (industry) params.append('industry', industry);
+    if (hqRegion) params.append('hq_region', hqRegion);
     params.append('format', 'json');
 
     const resp = await fetch(submitEndpoint, {
@@ -220,6 +248,8 @@ async function onJobSubmit(e) {
       $('formCount').value = 5;
       $('formMinIcp').value = 90;
       $('formDm').checked = true;
+      $('advancedFields').style.display = 'none';
+      $('toggleAdvancedBtn').textContent = '+ Add targeting details (revenue, titles, industry…)';
       toast('Run started — watch it fill in below');
       startLiveRun(resData.job_id, count);
       refreshTaskList();
