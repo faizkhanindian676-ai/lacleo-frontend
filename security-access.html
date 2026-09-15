@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Access &amp; Security</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ctl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; }
+  .ctl-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--shadow-card); scroll-margin-top: 90px; }
+  .ctl-card:target { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+  .ctl-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+  .ctl-badge.stop { background: var(--danger-tint); color: var(--danger); }
+  .ctl-badge.del { background: var(--bg-subtle2); color: var(--ink-muted); }
+  .ctl-badge.run { background: var(--verified-tint); color: var(--verified); }
+  .ctl-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .ctl-card p { font-size: 13.5px; color: var(--ink-body); line-height: 1.55; margin: 0; }
+  @media (max-width: 960px) { .ctl-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="top">
+    <a href="index.html" class="wordmark"><div class="mark">L</div>LaCleo Intelligence</a>
+    <ul class="nav-menu">
+      <li><a href="how-it-works.html">How it runs</a></li>
+      <li><a href="sample-leads.html">Sample leads</a></li>
+      <li><a href="benchmark.html">Benchmark</a></li>
+      <li><a href="security-access.html" class="current">Access &amp; security</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="how-it-works.html" class="btn-nav-ghost">How it runs</a>
+      <a href="index.html#access" class="btn-nav-primary">Enter console →</a>
+    </div>
+  </nav>
+
+  <section class="page-hero">
+    <a href="index.html" class="page-crumb">← LaCleo Intelligence</a>
+    <span class="sec-tag">// Access &amp; control</span>
+    <h1>One email in. Full control once you're there.</h1>
+    <p class="sub">No password to create or lose — and once you're in, every run is yours to watch, stop, or delete.</p>
+  </section>
+
+  <section class="block tight" id="gate">
+    <div class="access" style="padding-block: 0;">
+      <div class="access-copy">
+        <span class="sec-tag">// Getting in</span>
+        <h2>Your corporate email is the whole login</h2>
+        <p>Free domains — Gmail, Yahoo, Outlook — aren't accepted, so a run can always be traced back to a real company. There's no password to set, forget, or reset.</p>
+        <div class="points">
+          <div class="point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Same email works for your first visit and every one after</div>
+          <div class="point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Nothing to reset if you forget — there's nothing to forget</div>
+        </div>
+      </div>
+      <div class="mini-gate">
+        <label class="field-lbl">Corporate work email</label>
+        <input class="field-input" type="email" placeholder="name@company.com" id="gateEmail1">
+        <div class="gate-alert">⚠️ <b>Personal email restricted.</b> Free domains like Gmail, Yahoo and Outlook aren't supported — use your company address.</div>
+        <a class="btn btn-dark gate-submit" href="#" id="gateSubmit1">Enter console →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block rule" id="scoping">
+    <div class="block-head">
+      <span class="sec-tag">// Per-user scoping</span>
+      <h2 class="sec-heading">You only ever see your own runs</h2>
+      <p class="sec-sub">Every run is tied to the email that started it — your dashboard shows your history, not the whole team's.</p>
+    </div>
+    <div class="trust-strip">
+      <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Runs filtered by the email that started them</div>
+      <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>History persists across visits, no re-entry needed</div>
+      <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>A run in progress keeps going even if you close the tab</div>
+    </div>
+  </section>
+
+  <section class="block rule" id="controls">
+    <div class="block-head">
+      <span class="sec-tag">// Run controls</span>
+      <h2 class="sec-heading">Three things you can do to any run</h2>
+      <p class="sec-sub">Not just cosmetic — these actually change what's happening in the background.</p>
+    </div>
+    <div class="ctl-grid">
+      <div class="ctl-card"><span class="ctl-badge run">● WATCH</span><h3>Live progress</h3><p>Cards fill in as each lead clears verification, with a stage label so you know exactly what's happening right now.</p></div>
+      <div class="ctl-card" id="stop"><span class="ctl-badge stop">■ STOP</span><h3>Stop a run</h3><p>Halts the run immediately — no further research or verification calls go out. Whatever was already verified is still delivered as a report.</p></div>
+      <div class="ctl-card" id="delete"><span class="ctl-badge del">✕ DELETE</span><h3>Delete a run</h3><p>Removes it from your dashboard for good. Nothing left behind to explain to a teammate later.</p></div>
+    </div>
+  </section>
+
+  <section class="access">
+    <div class="access-copy">
+      <span class="sec-tag">// See it yourself</span>
+      <h2>Your console, your control</h2>
+      <p>Enter your corporate email — you'll land straight in your own dashboard, with your own run history.</p>
+    </div>
+    <div class="gate-card">
+      <h3>Enter the console</h3>
+      <p class="gsub">Sign up or sign in with the same step — your corporate email is the only credential LaCleo needs.</p>
+      <label class="field-lbl">Corporate work email</label>
+      <input class="field-input" type="email" placeholder="name@company.com" id="gateEmail2">
+      <a class="btn btn-dark gate-submit" href="#" id="gateSubmit2">Enter console →</a>
+      <div class="gate-foot">Takes you straight to the dashboard you already use.</div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand"><h4>LaCleo Intelligence</h4><p>Verified B2B lead intelligence for outbound teams who'd rather not guess whether a title is still accurate.</p></div>
+    <div class="footer-col"><h5>Pipeline</h5><ul class="footer-links">
+      <li><a href="how-it-works.html#pillar-01">ICP calibration</a></li>
+      <li><a href="how-it-works.html#pillar-02">Live signal research</a></li>
+      <li><a href="how-it-works.html#pillar-03">Website verification</a></li>
+      <li><a href="how-it-works.html#pillar-04">LinkedIn employment check</a></li>
+    </ul></div>
+    <div class="footer-col"><h5>Console</h5><ul class="footer-links">
+      <li><a href="how-it-works.html#pillar-06">Live run tracking</a></li>
+      <li><a href="security-access.html#controls">Stop &amp; delete controls</a></li>
+      <li><a href="how-it-works.html#pillar-06">Google Sheets export</a></li>
+    </ul></div>
+    <div class="footer-col"><h5>Access</h5><ul class="footer-links">
+      <li><a href="security-access.html#gate">Corporate-email gated</a></li>
+      <li><a href="security-access.html#scoping">Per-user run history</a></li>
+      <li><a href="security-access.html#gate">No password required</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 LaCleo Intelligence.</div>
+    <div>Built for outbound teams who'd rather not guess.</div>
+  </div>
+</footer>
+
+<script>
+  var freeDoms = ['gmail.com','yahoo.com','hotmail.com','outlook.com','live.com','icloud.com','aol.com','mail.com','proton.me','protonmail.com','zoho.com'];
+  function getStoredEmail() { try { return localStorage.getItem('lacleo_auth_user') || ''; } catch (e) { return ''; } }
+  if (getStoredEmail()) window.location.href = 'dashboard.html';
+
+  function enterConsole(inputId) {
+    var input = document.getElementById(inputId);
+    var email = input.value.trim();
+    if (!email || !email.includes('@')) { input.style.borderColor = 'var(--danger)'; input.focus(); return; }
+    var dom = email.split('@')[1].toLowerCase().trim();
+    if (freeDoms.includes(dom)) { input.style.borderColor = 'var(--danger)'; return; }
+    input.style.borderColor = '';
+    try { localStorage.setItem('lacleo_auth_user', email); } catch (e) {}
+    window.location.href = 'dashboard.html';
+  }
+  document.getElementById('gateSubmit1').addEventListener('click', function (e) { e.preventDefault(); enterConsole('gateEmail1'); });
+  document.getElementById('gateEmail1').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); enterConsole('gateEmail1'); } });
+  document.getElementById('gateSubmit2').addEventListener('click', function (e) { e.preventDefault(); enterConsole('gateEmail2'); });
+  document.getElementById('gateEmail2').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); enterConsole('gateEmail2'); } });
+</script>
+</body>
+</html>

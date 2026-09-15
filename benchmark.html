@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verified Run Benchmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="top">
+    <a href="index.html" class="wordmark"><div class="mark">L</div>LaCleo Intelligence</a>
+    <ul class="nav-menu">
+      <li><a href="how-it-works.html">How it runs</a></li>
+      <li><a href="sample-leads.html">Sample leads</a></li>
+      <li><a href="benchmark.html" class="current">Benchmark</a></li>
+      <li><a href="security-access.html">Access &amp; security</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="sample-leads.html" class="btn-nav-ghost">See sample leads</a>
+      <a href="index.html#access" class="btn-nav-primary">Enter console →</a>
+    </div>
+  </nav>
+
+  <section class="page-hero">
+    <a href="index.html" class="page-crumb">← LaCleo Intelligence</a>
+    <span class="sec-tag">// Benchmark</span>
+    <h1>A bought list vs. a verified run</h1>
+    <p class="sub">The difference shows up before your first email goes out — in whether the person you're emailing still works there.</p>
+  </section>
+
+  <section class="block tight" id="compare">
+    <div class="comp-box comp-scroll">
+      <table class="comp-tbl">
+        <thead><tr><th style="width:36%;">Capability</th><th style="width:32%;">Bought contact list</th><th style="width:32%; color:var(--indigo);">LaCleo verified run</th></tr></thead>
+        <tbody>
+          <tr><td><strong>When the data was checked</strong></td><td><span class="tbl-cross">✕</span> Whenever the list was last scraped</td><td><span class="tbl-check">✓</span> Live, at run time</td></tr>
+          <tr><td><strong>Current employment</strong></td><td><span class="tbl-cross">✕</span> Often includes people who've since left</td><td><span class="tbl-check">✓</span> Cross-checked against live LinkedIn</td></tr>
+          <tr><td><strong>Reason to reach out</strong></td><td><span class="tbl-cross">✕</span> None — generic cold template</td><td><span class="tbl-check">✓</span> A dated, specific buying trigger</td></tr>
+          <tr><td><strong>Company still active</strong></td><td><span class="tbl-cross">✕</span> No check — could be defunct or acquired</td><td><span class="tbl-check">✓</span> Website verified live per run</td></tr>
+          <tr><td><strong>ICP fit</strong></td><td><span class="tbl-cross">✕</span> Filtered once, at list-build time</td><td><span class="tbl-check">✓</span> Scored fresh against your context, per run</td></tr>
+          <tr><td><strong>Control mid-run</strong></td><td><span class="tbl-cross">✕</span> It's a static file — no undo</td><td><span class="tbl-check">✓</span> Stop or delete any run, live</td></tr>
+          <tr><td><strong>Delivery</strong></td><td><span class="tbl-cross">✕</span> Manual CSV download</td><td><span class="tbl-check">✓</span> Live cards, then a ready Sheet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block rule">
+    <div class="block-head">
+      <span class="sec-tag">// Illustrative estimate</span>
+      <h2 class="sec-heading">Roughly how much manual checking this replaces</h2>
+      <p class="sec-sub">Move the sliders — this assumes about 15 minutes of manual title-and-employer checking per lead, the part LaCleo does automatically.</p>
+    </div>
+    <div class="roi-card">
+      <div>
+        <div class="slider-box"><label><span>Verified leads per month</span><span class="val" id="leadVal">100 leads</span></label><input type="range" class="slider-input" min="20" max="1000" step="20" value="100" id="sliderLeads" oninput="calcRoi()"></div>
+        <div class="slider-box"><label><span>Outbound reps on your team</span><span class="val" id="sdrVal">2 reps</span></label><input type="range" class="slider-input" min="1" max="20" step="1" value="2" id="sliderSdrs" oninput="calcRoi()"></div>
+        <div class="roi-note">Illustrative only — assumes ~15 minutes of manual employer/title verification per lead skipped, at a $45/hr fully-loaded rate. Not a guarantee.</div>
+      </div>
+      <div class="roi-box">
+        <div class="roi-label">Estimated time recaptured</div>
+        <div class="roi-big" id="moneySaved">$1,125</div>
+        <div class="roi-cap">estimated value per month, at your current volume</div>
+        <div class="roi-split">
+          <div><div class="k">Hours saved</div><div class="v" id="hoursSaved">25 hrs/mo</div></div>
+          <div><div class="k">Manual checks skipped</div><div class="v" id="checksSkipped">100/mo</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="access">
+    <div class="access-copy">
+      <span class="sec-tag">// See the difference yourself</span>
+      <h2>Run one list next to the other</h2>
+      <p>Enter your corporate email and compare a LaCleo run against whatever list you're using today.</p>
+    </div>
+    <div class="gate-card">
+      <h3>Enter the console</h3>
+      <p class="gsub">Sign up or sign in with the same step — your corporate email is the only credential LaCleo needs.</p>
+      <label class="field-lbl">Corporate work email</label>
+      <input class="field-input" type="email" placeholder="name@company.com" id="gateEmail">
+      <a class="btn btn-dark gate-submit" href="#" id="gateSubmit">Enter console →</a>
+      <div class="gate-foot">Takes you straight to the dashboard you already use.</div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand"><h4>LaCleo Intelligence</h4><p>Verified B2B lead intelligence for outbound teams who'd rather not guess whether a title is still accurate.</p></div>
+    <div class="footer-col"><h5>Pipeline</h5><ul class="footer-links">
+      <li><a href="how-it-works.html#pillar-01">ICP calibration</a></li>
+      <li><a href="how-it-works.html#pillar-02">Live signal research</a></li>
+      <li><a href="how-it-works.html#pillar-03">Website verification</a></li>
+      <li><a href="how-it-works.html#pillar-04">LinkedIn employment check</a></li>
+    </ul></div>
+    <div class="footer-col"><h5>Console</h5><ul class="footer-links">
+      <li><a href="how-it-works.html#pillar-06">Live run tracking</a></li>
+      <li><a href="security-access.html#controls">Stop &amp; delete controls</a></li>
+      <li><a href="how-it-works.html#pillar-06">Google Sheets export</a></li>
+    </ul></div>
+    <div class="footer-col"><h5>Access</h5><ul class="footer-links">
+      <li><a href="security-access.html#gate">Corporate-email gated</a></li>
+      <li><a href="security-access.html#scoping">Per-user run history</a></li>
+      <li><a href="security-access.html#gate">No password required</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 LaCleo Intelligence.</div>
+    <div>Built for outbound teams who'd rather not guess.</div>
+  </div>
+</footer>
+
+<script>
+  function calcRoi() {
+    var leads = parseInt(document.getElementById('sliderLeads').value, 10);
+    var sdrs = parseInt(document.getElementById('sliderSdrs').value, 10);
+    document.getElementById('leadVal').textContent = leads + ' leads';
+    document.getElementById('sdrVal').textContent = sdrs + (sdrs > 1 ? ' reps' : ' rep');
+    var hours = Math.round((leads * 15) / 60);
+    var dollars = Math.round(hours * 45);
+    document.getElementById('hoursSaved').textContent = hours + ' hrs/mo';
+    document.getElementById('checksSkipped').textContent = leads + '/mo';
+    document.getElementById('moneySaved').textContent = '$' + dollars.toLocaleString();
+  }
+
+  var freeDoms = ['gmail.com','yahoo.com','hotmail.com','outlook.com','live.com','icloud.com','aol.com','mail.com','proton.me','protonmail.com','zoho.com'];
+  function getStoredEmail() { try { return localStorage.getItem('lacleo_auth_user') || ''; } catch (e) { return ''; } }
+  if (getStoredEmail()) window.location.href = 'dashboard.html';
+
+  function enterConsole() {
+    var input = document.getElementById('gateEmail');
+    var email = input.value.trim();
+    if (!email || !email.includes('@')) { input.style.borderColor = 'var(--danger)'; input.focus(); return; }
+    var dom = email.split('@')[1].toLowerCase().trim();
+    if (freeDoms.includes(dom)) { input.style.borderColor = 'var(--danger)'; return; }
+    input.style.borderColor = '';
+    try { localStorage.setItem('lacleo_auth_user', email); } catch (e) {}
+    window.location.href = 'dashboard.html';
+  }
+  document.getElementById('gateSubmit').addEventListener('click', function (e) { e.preventDefault(); enterConsole(); });
+  document.getElementById('gateEmail').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); enterConsole(); } });
+</script>
+</body>
+</html>

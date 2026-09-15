@@ -3,86 +3,426 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LaCleo Intelligence Console</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<title>LaCleo Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
 </head>
 <body>
 
-<div id="viewLogin" class="view">
-  <div class="auth-box">
-    <div class="brand"><div class="b-icon">L</div><span>LaCleo Intelligence</span></div>
-    <h2>Sign in to Console</h2>
-    <p class="sub">Enter your corporate business email. Free email domains (Gmail, Yahoo, Outlook) are restricted.</p>
-    <div class="err-alert" id="domainErr">
-      &#9888;&#65039; <strong>Personal Email Restricted:</strong> Please enter your official corporate email (e.g. name@company.com). Free email domains like Gmail and Yahoo are not supported.
-    </div>
-    <form id="loginForm">
-      <label class="in-lbl">Corporate Work Email</label>
-      <input type="email" class="in-txt" id="emailIn" placeholder="name@company.com" required>
-      <button type="submit" class="btn-go">Enter Console &rarr;</button>
-    </form>
+<div class="wrap">
+  <div class="top-strip">
+    <span class="top-pill">LIVE</span>
+    <span>Stop or delete any run from your dashboard — nothing keeps scraping after you click stop.</span>
+    <a href="#access" class="top-link">Enter console →</a>
   </div>
-</div>
 
-<div id="viewDashboard" class="view" hidden>
-  <header class="topbar">
-    <div class="brand"><div class="b-icon">L</div><span>LaCleo Intelligence</span></div>
-    <div class="user-chip">
-      <div class="avatar" id="userAvatar">--</div>
-      <span id="userEmailLabel"></span>
-      <button id="signOutBtn" class="btn-ghost">Sign out</button>
+  <nav class="top">
+    <a href="index.html" class="wordmark"><div class="mark">L</div>LaCleo Intelligence</a>
+    <ul class="nav-menu">
+      <li><a href="how-it-works.html">How it runs</a></li>
+      <li><a href="sample-leads.html">Sample leads</a></li>
+      <li><a href="benchmark.html">Benchmark</a></li>
+      <li><a href="security-access.html">Access &amp; security</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="sample-leads.html" class="btn-nav-ghost">See sample leads</a>
+      <a href="#access" class="btn-nav-primary">Enter console →</a>
     </div>
-  </header>
+  </nav>
 
-  <main class="main">
-    <section class="panel new-job-panel">
-      <h3>Start a New Lead Search</h3>
-      <form id="jobForm">
-        <label class="in-lbl">Client Context / Website / ICP</label>
-        <textarea id="icpIn" class="in-txt" rows="3" placeholder="e.g. https://yourcompany.com — we sell inventory software to mid-market retailers" required></textarea>
-        <div class="form-row">
+  <section class="hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-badge"><span class="dot"></span>Verified outbound intelligence, not a bought list</div>
+    <h1>Every lead, verified before it reaches you</h1>
+    <p class="sub">LaCleo researches live buying signals, cross-references every decision-maker against real LinkedIn employment, and streams verified dossiers into your console — no departed VPs, no guessed titles.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-dark" href="#access">Enter your console →</a>
+      <a class="btn btn-light" href="how-it-works.html">Watch it run →</a>
+    </div>
+
+    <div class="banner-frame">
+      <div class="banner-bar">
+        <div class="banner-dots"><span></span><span></span><span></span></div>
+        <div class="banner-url">console.lacleo.ai/dashboard</div>
+        <div class="banner-status">● RUN ACTIVE</div>
+      </div>
+      <div class="radar-stage">
+        <div class="radar-grid"></div>
+        <div class="radar-sweep"></div>
+        <div class="radar-node" style="top:28%; left:38%;"></div>
+        <div class="radar-node" style="top:58%; left:62%; animation-delay:0.6s;"></div>
+        <div class="radar-node" style="top:70%; left:30%; animation-delay:1.1s;"></div>
+
+        <div class="glass-card gc-1">
+          <div class="glass-avatar">JG</div>
           <div>
-            <label class="in-lbl">Lead Count</label>
-            <input type="number" id="formCount" class="in-txt" value="5" min="1" max="50">
-          </div>
-          <div>
-            <label class="in-lbl">Minimum ICP Score</label>
-            <input type="number" id="formMinIcp" class="in-txt" value="90" min="0" max="100">
+            <div class="glass-name">Joe Goldberg</div>
+            <div class="glass-sub">Director, Product Marketing · Vanta</div>
+            <div class="glass-check">✓ Employment verified</div>
           </div>
         </div>
-        <div class="chk-row">
-          <label class="chk-lbl"><input type="checkbox" id="formDm" checked> Find decision-maker contact info</label>
-          <label class="chk-lbl"><input type="checkbox" id="formMaxli" checked> Prioritize LinkedIn profiles</label>
+        <div class="glass-card gc-2">
+          <div class="glass-avatar">HA</div>
+          <div>
+            <div class="glass-name">Heather Adams</div>
+            <div class="glass-sub">VP Marketing · Gorgias</div>
+            <div class="glass-check" style="color:#93c5fd;">⚡ Trigger: AI Agent 3.0 launch</div>
+          </div>
         </div>
-        <button type="submit" class="btn-go" id="btnSubmit">Run Search &rarr;</button>
-      </form>
-    </section>
-
-    <section class="panel live-panel" id="livePanel" hidden>
-      <h3>Live Run <span class="stage-text" id="liveStage">Starting...</span></h3>
-      <div class="progress-track"><div class="progress-fill" id="liveProgress"></div></div>
-      <div class="cards-grid" id="cardsGrid"></div>
-    </section>
-
-    <section class="panel">
-      <h3>Your Runs</h3>
-      <div id="taskList" class="task-list"></div>
-    </section>
-  </main>
-</div>
-
-<div id="leadsModal" class="modal-overlay" hidden>
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3>Lead Details</h3>
-      <button id="closeLeadsModal" class="btn-ghost">Close</button>
+        <div class="glass-card gc-3">
+          <div class="glass-avatar" style="background:rgba(255,255,255,0.12); color:#fff;">📄</div>
+          <div>
+            <div class="glass-name">Report syncing live</div>
+            <div class="glass-sub">3 of 3 verified · sheet ready</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="modalSheetLink" class="modal-sheet-link"></div>
-    <div id="modalLeadsList" class="leads-list"></div>
+  </section>
+
+  <div class="trust-strip">
+    <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Corporate-email gated access</div>
+    <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>LinkedIn employment cross-checked</div>
+    <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Every run scoped to its own owner</div>
+    <div class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Stop or delete any run, anytime</div>
   </div>
+
+  <section class="block" id="theater">
+    <div class="block-head">
+      <span class="sec-tag">// Watch a run execute</span>
+      <h2 class="sec-heading">This is what your console does, stage by stage</h2>
+      <p class="sec-sub">Three real stages from a LaCleo run — press play, or <a href="how-it-works.html" style="color:var(--indigo); font-weight:600; text-decoration:none;">see the full breakdown →</a></p>
+    </div>
+
+    <div class="theater">
+      <div class="theater-tabs">
+        <div class="t-tabs-row">
+          <button class="t-tab active" id="tab0" onclick="selectStage(0)">1. Signal Research</button>
+          <button class="t-tab" id="tab1" onclick="selectStage(1)">2. LinkedIn Verification</button>
+          <button class="t-tab" id="tab2" onclick="selectStage(2)">3. Sheet Delivery</button>
+        </div>
+        <div class="t-live"><span class="t-live-dot"></span><span class="lbl">RUN STREAMING</span></div>
+      </div>
+      <div class="theater-body">
+        <div class="theater-head">
+          <div class="theater-dots">
+            <span class="d" style="background:#ef4444;"></span><span class="d" style="background:#f59e0b;"></span><span class="d" style="background:#10b981;"></span>
+            <span class="theater-file" id="fileLabel">lacleo // signal-research.log</span>
+          </div>
+          <div class="theater-badge" id="stageBadge">STAGE: RESEARCHING COMPANIES</div>
+        </div>
+
+        <div class="theater-grid">
+          <div class="term" id="termLog"></div>
+          <div class="insp-card">
+            <div>
+              <div class="insp-top">
+                <div><div class="insp-name" id="cCompany">Vanta</div><div class="insp-dom" id="cDomain">vanta.com · Compliance automation</div></div>
+                <div class="insp-icp" id="cIcp">ICP 95</div>
+              </div>
+              <div class="insp-dm">
+                <div class="insp-avatar" id="cAvatar">JG</div>
+                <div>
+                  <div class="insp-dm-name" id="cName">Joe Goldberg</div>
+                  <div class="insp-dm-title" id="cTitle">Director, Product Marketing</div>
+                  <div class="insp-verified" id="cVerified">✓ EMPLOYMENT VERIFIED</div>
+                </div>
+              </div>
+              <div class="insp-trigger"><b>Verified buying trigger</b><span id="cTrigger">Vanta hit $300M ARR and launched a new risk agent this quarter.</span></div>
+            </div>
+            <div class="insp-foot"><span>Google Sheet streaming</span><span class="ok" id="cRow">● ROW 01 SYNCED</span></div>
+          </div>
+        </div>
+
+        <div class="theater-bar">
+          <button class="play-toggle" id="playBtn" onclick="togglePlay()">⏸</button>
+          <div class="scrub-track" id="scrubTrack" onclick="scrub(event)"><div class="scrub-fill" id="scrubFill" style="width:8%;"></div></div>
+          <div class="theater-time" id="timeLbl">00:12 / 02:30</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block rule" id="specimens">
+    <div class="block-head">
+      <span class="sec-tag">// Sample verified leads</span>
+      <h2 class="sec-heading">What actually lands in your console</h2>
+      <p class="sec-sub">Real-shaped output from LaCleo's pipeline — <a href="sample-leads.html" style="color:var(--indigo); font-weight:600; text-decoration:none;">see the full gallery →</a></p>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <div>
+          <div class="spec-header">
+            <div class="spec-avatar">JG</div>
+            <div class="spec-name"><h4>Joe Goldberg</h4><p>Director, Product Marketing · Vanta</p><div class="spec-role-pill">● Employment verified</div></div>
+          </div>
+          <div class="spec-trigger" style="margin-top:14px;"><div class="spec-trigger-title">Verified buying trigger</div>Vanta hit $300M ARR and shipped a new risk agent this quarter — a marketing team under pressure to prove attribution.</div>
+        </div>
+        <div class="spec-hook">"Congrats on the risk agent launch — teams scaling that fast usually can't wait on quarterly pipeline reviews. Worth a 15-minute look at how peers are shortening that loop?"</div>
+      </div>
+      <div class="spec-card">
+        <div>
+          <div class="spec-header">
+            <div class="spec-avatar">HA</div>
+            <div class="spec-name"><h4>Heather Adams</h4><p>VP Marketing · Gorgias</p><div class="spec-role-pill">● Employment verified</div></div>
+          </div>
+          <div class="spec-trigger" style="margin-top:14px;"><div class="spec-trigger-title">Verified buying trigger</div>Gorgias launched AI Agent 3.0 for reliable customer experience this quarter.</div>
+        </div>
+        <div class="spec-hook">"Saw the AI Agent 3.0 launch — usually means support volume is about to spike before the marketing story catches up. Happy to share what similar CX launches needed at this stage."</div>
+      </div>
+      <div class="spec-card">
+        <div>
+          <div class="spec-header">
+            <div class="spec-avatar">JA</div>
+            <div class="spec-name"><h4>Julian Alvarez</h4><p>VP, Pipeline & Sales Development · Gong</p><div class="spec-role-pill">● Employment verified</div></div>
+          </div>
+          <div class="spec-trigger" style="margin-top:14px;"><div class="spec-trigger-title">Verified buying trigger</div>Gong shipped Mission Big Dipper, an agentic execution layer on its Revenue AI OS.</div>
+        </div>
+        <div class="spec-hook">"An agentic execution layer usually means the SDR org is being asked to move faster with the same headcount — curious how the pipeline math is shifting on your side."</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block rule">
+    <div class="block-head">
+      <span class="sec-tag">// Under the hood</span>
+      <h2 class="sec-heading">Six checkpoints, one verified dossier</h2>
+      <p class="sec-sub">Every lead in your console clears all six — <a href="how-it-works.html" style="color:var(--indigo); font-weight:600; text-decoration:none;">read how each one works →</a></p>
+    </div>
+    <div class="pillar-grid">
+      <div class="pillar-card"><div class="pillar-num">01</div><h3>ICP calibration</h3><p>Your context — a URL, a description, or both — is parsed into a real buyer profile before any research starts.</p><ul class="pillar-list"><li>Live site read, not a form guess</li><li>Score threshold you set per run</li></ul></div>
+      <div class="pillar-card"><div class="pillar-num">02</div><h3>Live signal research</h3><p>Companies are matched against your ICP using recent, dated events — not a static list bought last quarter.</p><ul class="pillar-list"><li>Funding, hires, launches, M&amp;A</li><li>Excludes companies already tried this run</li></ul></div>
+      <div class="pillar-card"><div class="pillar-num">03</div><h3>Website verification</h3><p>Every candidate company's own site is checked live before it's worth spending a LinkedIn lookup on it.</p><ul class="pillar-list"><li>Confirms the business is real and active</li><li>Filters dead domains before enrichment</li></ul></div>
+      <div class="pillar-card"><div class="pillar-num">04</div><h3>LinkedIn employment check</h3><p>Candidate decision-makers are cross-referenced against current, live LinkedIn profiles — not a cached database row.</p><ul class="pillar-list"><li>Current-employer match required</li><li>Departed or wrong-department names dropped</li></ul></div>
+      <div class="pillar-card"><div class="pillar-num">05</div><h3>SDR-ready hooks</h3><p>Each verified lead ships with the trigger event and an opener that references it — not a blind template.</p><ul class="pillar-list"><li>Trigger-to-opener in one step</li><li>Ready to paste into your sequence</li></ul></div>
+      <div class="pillar-card"><div class="pillar-num">06</div><h3>Live delivery</h3><p>Cards fill in on your console as each lead clears verification, and a Google Sheet is ready the moment your target is hit.</p><ul class="pillar-list"><li>Stop a run and keep what's verified</li><li>One-click report export</li></ul></div>
+    </div>
+  </section>
+
+  <section class="block rule">
+    <div class="block-head">
+      <span class="sec-tag">// Illustrative estimate</span>
+      <h2 class="sec-heading">Roughly how much manual checking this replaces</h2>
+      <p class="sec-sub">Move the sliders — this assumes about 15 minutes of manual title-and-employer checking per lead, the part LaCleo does automatically. <a href="benchmark.html" style="color:var(--indigo); font-weight:600; text-decoration:none;">See the full benchmark →</a></p>
+    </div>
+    <div class="roi-card">
+      <div>
+        <div class="slider-box"><label><span>Verified leads per month</span><span class="val" id="leadVal">100 leads</span></label><input type="range" class="slider-input" min="20" max="1000" step="20" value="100" id="sliderLeads" oninput="calcRoi()"></div>
+        <div class="slider-box"><label><span>Outbound reps on your team</span><span class="val" id="sdrVal">2 reps</span></label><input type="range" class="slider-input" min="1" max="20" step="1" value="2" id="sliderSdrs" oninput="calcRoi()"></div>
+        <div class="roi-note">Illustrative only — assumes ~15 minutes of manual employer/title verification per lead skipped, at a $45/hr fully-loaded rate. Not a guarantee.</div>
+      </div>
+      <div class="roi-box">
+        <div class="roi-label">Estimated time recaptured</div>
+        <div class="roi-big" id="moneySaved">$1,125</div>
+        <div class="roi-cap">estimated value per month, at your current volume</div>
+        <div class="roi-split">
+          <div><div class="k">Hours saved</div><div class="v" id="hoursSaved">25 hrs/mo</div></div>
+          <div><div class="k">Manual checks skipped</div><div class="v" id="checksSkipped">100/mo</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="access" id="access">
+    <div class="access-copy">
+      <span class="sec-tag">// Your console</span>
+      <h2>One email. No password to lose.</h2>
+      <p>New here or coming back — the same corporate email takes you straight into your runs, live cards and reports. Nothing to create, nothing to remember. <a href="security-access.html" style="color:var(--indigo); font-weight:600; text-decoration:none;">How access works →</a></p>
+      <div class="points">
+        <div class="point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Restricted to corporate work email — no shared Gmail logins</div>
+        <div class="point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Your runs, and only your runs, on every visit</div>
+        <div class="point"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Picks up a run in progress even if you closed the tab</div>
+      </div>
+    </div>
+    <div class="gate-card">
+      <h3>Enter the console</h3>
+      <p class="gsub">Sign up or sign in with the same step — your corporate email is the only credential LaCleo needs.</p>
+      <label class="field-lbl">Corporate work email</label>
+      <input class="field-input" type="email" placeholder="name@company.com" id="gateEmail">
+      <div class="gate-alert" id="gateAlert">⚠️ <b>Personal email restricted.</b> Free domains like Gmail, Yahoo and Outlook aren't supported — use your company address.</div>
+      <a class="btn btn-dark gate-submit" href="#" id="gateSubmit">Enter console →</a>
+      <div class="gate-foot">Takes you straight to the dashboard you already use.</div>
+    </div>
+  </section>
 </div>
 
-<script src="app.js"></script>
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand"><h4>LaCleo Intelligence</h4><p>Verified B2B lead intelligence for outbound teams who'd rather not guess whether a title is still accurate.</p></div>
+    <div class="footer-col"><h5>Pipeline</h5><ul class="footer-links">
+      <li><a href="how-it-works.html#pillar-01">ICP calibration</a></li>
+      <li><a href="how-it-works.html#pillar-02">Live signal research</a></li>
+      <li><a href="how-it-works.html#pillar-03">Website verification</a></li>
+      <li><a href="how-it-works.html#pillar-04">LinkedIn employment check</a></li>
+    </ul></div>
+    <div class="footer-col"><h5>Console</h5><ul class="footer-links">
+      <li><a href="how-it-works.html#pillar-06">Live run tracking</a></li>
+      <li><a href="security-access.html#controls">Stop &amp; delete controls</a></li>
+      <li><a href="how-it-works.html#pillar-06">Google Sheets export</a></li>
+    </ul></div>
+    <div class="footer-col"><h5>Access</h5><ul class="footer-links">
+      <li><a href="security-access.html#gate">Corporate-email gated</a></li>
+      <li><a href="security-access.html#scoping">Per-user run history</a></li>
+      <li><a href="security-access.html#gate">No password required</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 LaCleo Intelligence.</div>
+    <div>Built for outbound teams who'd rather not guess.</div>
+  </div>
+</footer>
+
+<script>
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var stages = [
+    {
+      file: 'lacleo // signal-research.log',
+      badge: 'STAGE: RESEARCHING COMPANIES',
+      logs: [
+        ['#606f89','# Reading ICP context and target lead count...'],
+        ['#38bdf8','$ lacleo research --icp "compliance automation, Series C+" --count 10'],
+        ['#cbd5e1','Matching companies against recent, dated buying signals...'],
+        ['#4ade80','Candidate found: Vanta — hit $300M ARR, shipped new risk agent'],
+        ['#cbd5e1','Excluding companies already tried this run...'],
+        ['#c084fc','>>> 10 candidates drafted. Handing off to verification.']
+      ],
+      company: 'Vanta', domain: 'vanta.com · Compliance automation', icp: 'ICP 95',
+      avatar: 'JG', name: 'Joe Goldberg', title: 'Director, Product Marketing', verified: '… PENDING VERIFICATION',
+      trigger: 'Vanta hit $300M ARR and launched a new risk agent this quarter.', row: '● QUEUED'
+    },
+    {
+      file: 'lacleo // linkedin-verify.log',
+      badge: 'STAGE: VERIFYING LINKEDIN',
+      logs: [
+        ['#606f89','# Pulling live company employee list from LinkedIn...'],
+        ['#38bdf8','$ lacleo verify-employment --company "vanta.com" --dept marketing'],
+        ['#cbd5e1','Checking each candidate against current, live profile data...'],
+        ['#ef4444','Dropped: 1 candidate no longer at this company'],
+        ['#4ade80','PASS: Joe Goldberg — current Director, Product Marketing'],
+        ['#c084fc','>>> Employment confirmed. Building the dossier.']
+      ],
+      company: 'Vanta', domain: 'vanta.com · Compliance automation', icp: 'ICP 95',
+      avatar: 'JG', name: 'Joe Goldberg', title: 'Director, Product Marketing', verified: '✓ EMPLOYMENT VERIFIED',
+      trigger: 'Vanta hit $300M ARR and launched a new risk agent this quarter.', row: '● VERIFIED'
+    },
+    {
+      file: 'lacleo // sheet-delivery.log',
+      badge: 'STAGE: STREAMING TO SHEET',
+      logs: [
+        ['#606f89','# Compiling verified dossier for delivery...'],
+        ['#38bdf8','$ lacleo deliver --job job_1789488070599 --format sheet'],
+        ['#cbd5e1','Writing trigger, contact, and outreach hook to row 01...'],
+        ['#4ade80','Row 01 synced to Google Sheet'],
+        ['#4ade80','Dashboard card updated — card no longer blurred'],
+        ['#c084fc','>>> Ready. 1 of 10 leads live in your console.']
+      ],
+      company: 'Vanta', domain: 'vanta.com · Compliance automation', icp: 'ICP 95',
+      avatar: 'JG', name: 'Joe Goldberg', title: 'Director, Product Marketing', verified: '✓ EMPLOYMENT VERIFIED',
+      trigger: 'Vanta hit $300M ARR and launched a new risk agent this quarter.', row: '● ROW 01 SYNCED'
+    }
+  ];
+
+  var currentTab = 0, playing = true, playSecs = 12, totalSecs = 150;
+
+  function renderStage(i) {
+    var s = stages[i];
+    document.getElementById('fileLabel').textContent = s.file;
+    document.getElementById('stageBadge').textContent = s.badge;
+    document.getElementById('termLog').innerHTML = s.logs.map(function (l) { return '<div style="color:' + l[0] + ';">' + l[1] + '</div>'; }).join('');
+    document.getElementById('cCompany').textContent = s.company;
+    document.getElementById('cDomain').textContent = s.domain;
+    document.getElementById('cIcp').textContent = s.icp;
+    document.getElementById('cAvatar').textContent = s.avatar;
+    document.getElementById('cName').textContent = s.name;
+    document.getElementById('cTitle').textContent = s.title;
+    document.getElementById('cVerified').textContent = s.verified;
+    document.getElementById('cTrigger').textContent = s.trigger;
+    document.getElementById('cRow').textContent = s.row;
+  }
+
+  function selectStage(i) {
+    currentTab = i;
+    document.querySelectorAll('.t-tab').forEach(function (b, idx) { b.classList.toggle('active', idx === i); });
+    renderStage(i);
+  }
+
+  function togglePlay() {
+    playing = !playing;
+    document.getElementById('playBtn').textContent = playing ? '⏸' : '▶';
+  }
+
+  function scrub(e) {
+    var track = document.getElementById('scrubTrack');
+    var r = track.getBoundingClientRect();
+    var pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    playSecs = Math.round(pct * totalSecs);
+    updateTime();
+  }
+
+  function updateTime() {
+    var pct = (playSecs / totalSecs) * 100;
+    document.getElementById('scrubFill').style.width = pct + '%';
+    var cm = Math.floor(playSecs / 60), cs = playSecs % 60, tm = Math.floor(totalSecs / 60), ts = totalSecs % 60;
+    document.getElementById('timeLbl').textContent = (cm < 10 ? '0' : '') + cm + ':' + (cs < 10 ? '0' : '') + cs + ' / ' + (tm < 10 ? '0' : '') + tm + ':' + (ts < 10 ? '0' : '') + ts;
+  }
+
+  renderStage(0);
+  updateTime();
+
+  if (!reduce) {
+    setInterval(function () { if (!playing) return; playSecs++; if (playSecs > totalSecs) playSecs = 0; updateTime(); }, 1000);
+    setInterval(function () { if (!playing) return; currentTab = (currentTab + 1) % stages.length; selectStage(currentTab); }, 5500);
+  }
+
+  function calcRoi() {
+    var leads = parseInt(document.getElementById('sliderLeads').value, 10);
+    var sdrs = parseInt(document.getElementById('sliderSdrs').value, 10);
+    document.getElementById('leadVal').textContent = leads + ' leads';
+    document.getElementById('sdrVal').textContent = sdrs + (sdrs > 1 ? ' reps' : ' rep');
+    var hours = Math.round((leads * 15) / 60);
+    var dollars = Math.round(hours * 45);
+    document.getElementById('hoursSaved').textContent = hours + ' hrs/mo';
+    document.getElementById('checksSkipped').textContent = leads + '/mo';
+    document.getElementById('moneySaved').textContent = '$' + dollars.toLocaleString();
+  }
+
+  var freeDoms = ['gmail.com','yahoo.com','hotmail.com','outlook.com','live.com','icloud.com','aol.com','mail.com','proton.me','protonmail.com','zoho.com'];
+
+  function getStoredEmail() {
+    try { return localStorage.getItem('lacleo_auth_user') || ''; } catch (e) { return ''; }
+  }
+
+  (function redirectIfSignedIn() {
+    if (getStoredEmail()) window.location.href = 'dashboard.html';
+  })();
+
+  function enterConsole() {
+    var input = document.getElementById('gateEmail');
+    var alertEl = document.getElementById('gateAlert');
+    var email = input.value.trim();
+    alertEl.style.borderColor = '#fecaca';
+
+    if (!email || !email.includes('@')) {
+      input.style.borderColor = 'var(--danger)';
+      input.focus();
+      return;
+    }
+    var dom = email.split('@')[1].toLowerCase().trim();
+    if (freeDoms.includes(dom)) {
+      input.style.borderColor = 'var(--danger)';
+      alertEl.style.borderColor = 'var(--danger)';
+      alertEl.style.boxShadow = '0 0 0 2px var(--danger-tint)';
+      return;
+    }
+    input.style.borderColor = '';
+    try { localStorage.setItem('lacleo_auth_user', email); } catch (e) {}
+    window.location.href = 'dashboard.html';
+  }
+
+  document.getElementById('gateSubmit').addEventListener('click', function (e) { e.preventDefault(); enterConsole(); });
+  document.getElementById('gateEmail').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); enterConsole(); } });
+</script>
 </body>
 </html>

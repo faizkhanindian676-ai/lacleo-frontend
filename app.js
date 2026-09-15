@@ -3,8 +3,6 @@ const statusEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/l
 const stopEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/stop-job';
 const deleteEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/delete-job';
 
-const freeDoms = ['gmail.com','yahoo.com','hotmail.com','outlook.com','live.com','icloud.com','aol.com','mail.com','proton.me','protonmail.com','zoho.com'];
-
 const $ = (id) => document.getElementById(id);
 
 let activeEmail = null;
@@ -45,51 +43,27 @@ function initialsOf(name) {
 
 function init() {
   const existing = getStoredEmail();
-  if (existing) {
-    enterDashboard(existing);
-  } else {
-    $('viewLogin').hidden = false;
-    $('viewDashboard').hidden = true;
+  if (!existing) {
+    window.location.href = 'index.html';
+    return;
   }
+  enterDashboard(existing);
 
-  $('loginForm').addEventListener('submit', onLoginSubmit);
   $('signOutBtn').addEventListener('click', onSignOut);
   $('jobForm').addEventListener('submit', onJobSubmit);
   $('closeLeadsModal').addEventListener('click', closeLeadsCart);
   $('leadsModal').addEventListener('click', (e) => { if (e.target.id === 'leadsModal') closeLeadsCart(); });
 }
 
-function onLoginSubmit(e) {
-  e.preventDefault();
-  const email = $('emailIn').value.trim();
-  const err = $('domainErr');
-  err.style.display = 'none';
-
-  if (!email || !email.includes('@')) {
-    err.style.display = 'block';
-    return;
-  }
-  const dom = email.split('@')[1].toLowerCase().trim();
-  if (freeDoms.includes(dom)) {
-    err.style.display = 'block';
-    return;
-  }
-  setStoredEmail(email);
-  enterDashboard(email);
-}
-
 function onSignOut() {
   stopPolling();
   clearStoredEmail();
   activeEmail = null;
-  $('viewDashboard').hidden = true;
-  $('viewLogin').hidden = false;
+  window.location.href = 'index.html';
 }
 
 function enterDashboard(email) {
   activeEmail = email;
-  $('viewLogin').hidden = true;
-  $('viewDashboard').hidden = false;
   $('userEmailLabel').textContent = email;
   $('userAvatar').textContent = email.slice(0, 2).toUpperCase();
 
