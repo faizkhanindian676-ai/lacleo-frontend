@@ -1,5 +1,7 @@
 const submitEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/lead-generate-submit';
 const statusEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/lead-status';
+const stopEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/stop-job';
+const deleteEndpoint = 'https://primary-production-8f0b.up.railway.app/webhook/delete-job';
 
 const freeDoms = ['gmail.com','yahoo.com','hotmail.com','outlook.com','live.com','icloud.com','aol.com','mail.com','proton.me','protonmail.com','zoho.com'];
 
@@ -118,26 +120,62 @@ function renderTaskList(tasks) {
     return;
   }
   list.innerHTML = tasks.map(t => {
-    const isDone = t.status === 'done';
-    const badge = isDone
-      ? '<span class="badge done">Done</span>'
-      : '<span class="badge processing">Processing</span>';
-    const viewBtn = isDone
+    let badge;
+    if (t.status === 'stopped') badge = '<span class="badge stopped">Stopped</span>';
+    else if (t.status === 'done') badge = '<span class="badge done">Done</span>';
+    else badge = '<span class="badge processing">Processing</span>';
+
+    const viewBtn = (t.status === 'done' || t.status === 'stopped')
       ? `<button class="view-leads-btn" data-job-id="${escapeAttr(t.job_id)}">View Leads</button>`
       : '';
+    const stopBtn = t.status === 'processing'
+      ? `<button class="stop-btn" data-job-id="${escapeAttr(t.job_id)}">Stop</button>`
+      : '';
+    const deleteBtn = `<button class="delete-btn" data-job-id="${escapeAttr(t.job_id)}">Delete</button>`;
     return `
       <div class="task-row">
         <div class="t-main">
           <div class="t-icp">${escapeHtml(t.stage || 'Lead search')} &middot; ${t.lead_count || 0} leads</div>
           <div class="t-stage">${escapeHtml(new Date(t.created_at).toLocaleString())}</div>
         </div>
-        <div class="t-right">${badge}${viewBtn}</div>
+        <div class="t-right">${badge}${viewBtn}${stopBtn}${deleteBtn}</div>
       </div>`;
   }).join('');
 
   list.querySelectorAll('.view-leads-btn').forEach(btn => {
     btn.addEventListener('click', () => openLeadsCart(btn.dataset.jobId));
   });
+  list.querySelectorAll('.stop-btn').forEach(btn => {
+    btn.addEventListener('click', () => onStopClick(btn.dataset.jobId));
+  });
+  list.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => onDeleteClick(btn.dataset.jobId));
+  });
+}
+
+async function onStopClick(jobId) {
+  if (!confirm('Stop this run? Leads found so far will still be saved to the report.')) return;
+  try {
+    await fetch(stopEndpoint + '?job_id=' + encodeURIComponent(jobId));
+    if (activeJobId === jobId) $('liveStage').textContent = 'Stopping...';
+    refreshTaskList();
+  } catch (err) {
+    console.error('stopJob failed', err);
+  }
+}
+
+async function onDeleteClick(jobId) {
+  if (!confirm('Delete this run permanently? This cannot be undone.')) return;
+  try {
+    await fetch(deleteEndpoint + '?job_id=' + encodeURIComponent(jobId));
+    if (activeJobId === jobId) {
+      stopPolling();
+      $('livePanel').hidden = true;
+    }
+    refreshTaskList();
+  } catch (err) {
+    console.error('deleteJob failed', err);
+  }
 }
 
 async function onJobSubmit(e) {
@@ -240,13 +278,13 @@ async function pollJobStatus(targetCount) {
     const pct = Math.min(100, Math.round((revealedCount / targetCount) * 100));
     $('liveProgress').style.width = pct + '%';
 
-    if (data.status === 'done') {
+    if (data.status === 'done' || data.status === 'stopped') {
       stopPolling();
       for (let i = revealedCount; i < targetCount; i++) {
         const card = document.getElementById('leadCard_' + i);
         if (card) card.classList.remove('blurry');
       }
-      $('liveStage').textContent = 'Done — your report is ready';
+      $('liveStage').textContent = data.status === 'stopped' ? 'Stopped by user' : 'Done — your report is ready';
       if (data.sheet_url) {
         const link = document.createElement('a');
         link.href = data.sheet_url;

@@ -68,10 +68,15 @@ p.sub { font-size: 13.5px; color: #64748b; line-height: 1.5; margin-bottom: 22px
 .badge { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; }
 .badge.processing { background: #fffbeb; color: #b45309; }
 .badge.done { background: #f0fdf4; color: #15803d; }
+.badge.stopped { background: #f1f5f9; color: #475569; }
 .sheet-link { font-size: 12.5px; font-weight: 600; color: #2563eb; text-decoration: none; }
 .empty-hint { color: #94a3b8; font-size: 13px; padding: 10px 0; }
 .view-leads-btn { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 7px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; color: #334155; }
 .view-leads-btn:hover { background: #f1f5f9; }
+.stop-btn { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 7px; border: 1px solid #fecaca; background: #fff; cursor: pointer; color: #b91c1c; }
+.stop-btn:hover { background: #fef2f2; }
+.delete-btn { font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 7px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; color: #94a3b8; }
+.delete-btn:hover { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
 
 /* ---------- Leads modal ---------- */
 .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
