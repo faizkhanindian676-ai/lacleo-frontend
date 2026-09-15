@@ -206,8 +206,13 @@ function startLiveRun(jobId, targetCount) {
       <div class="scan-laser"></div>
       <div class="icp-badge">--</div>
       <div class="card-content">
-        <div class="company">Researching...</div>
-        <div class="dm">-</div>
+        <div class="lc-top">
+          <div class="lc-avatar">?</div>
+          <div class="lc-info">
+            <div class="company">Researching...</div>
+            <div class="dm">-</div>
+          </div>
+        </div>
         <div class="meta">-</div>
       </div>`;
     grid.appendChild(card);
@@ -225,9 +230,10 @@ async function pollJobStatus(targetCount) {
 
     if (data.stage) $('liveStage').textContent = data.stage;
 
-    const leads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
-    while (revealedCount < leads.length && revealedCount < targetCount) {
-      revealCard(revealedCount, leads[revealedCount]);
+    const allLeads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
+    const verifiedLeads = allLeads.filter(l => l && String(l.dm_name || l.name || '').trim());
+    while (revealedCount < verifiedLeads.length && revealedCount < targetCount) {
+      revealCard(revealedCount, verifiedLeads[revealedCount]);
       revealedCount++;
     }
     const pct = Math.min(100, Math.round((revealedCount / targetCount) * 100));
@@ -263,6 +269,14 @@ function revealCard(idx, lead) {
   if (!card) return;
   const n = normalizeLead(lead);
   card.classList.remove('blurry');
+  const avatarEl = card.querySelector('.lc-avatar');
+  if (avatarEl) {
+    if (n.photo) {
+      avatarEl.outerHTML = `<img class="lc-avatar" src="${escapeAttr(n.photo)}" alt="">`;
+    } else {
+      avatarEl.textContent = initialsOf(n.name);
+    }
+  }
   card.querySelector('.company').textContent = n.company || 'Unknown company';
   card.querySelector('.dm').textContent = [n.name, n.title].filter(Boolean).join(' — ') || 'Decision maker unavailable';
   card.querySelector('.meta').textContent = n.location || n.domain || '';
