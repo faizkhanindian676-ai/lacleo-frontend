@@ -10,12 +10,10 @@ let pollTimer = null;
 let listTimer = null;
 let activeJobId = null;
 let revealedCount = 0;
+let lastTasks = [];
 
 function getStoredEmail() {
   try { return localStorage.getItem('lacleo_auth_user') || ''; } catch (e) { return ''; }
-}
-function setStoredEmail(email) {
-  try { localStorage.setItem('lacleo_auth_user', email); } catch (e) {}
 }
 function clearStoredEmail() {
   try { localStorage.removeItem('lacleo_auth_user'); } catch (e) {}
@@ -30,9 +28,11 @@ function normalizeLead(l) {
     title: l.title || l.dm_title || '',
     li: l.li || l.dm_linkedin || '',
     location: l.location || '',
+    headcount: l.headcount || '',
+    revenue: l.revenue || '',
     trigger: l.trigger || '',
     hook: l.hook || '',
-    icp: l.icp_score || '',
+    icp: l.icp_score || l.icp || '',
     photo: l.photo || ''
   };
 }
@@ -49,10 +49,25 @@ function init() {
   }
   enterDashboard(existing);
 
-  $('signOutBtn').addEventListener('click', onSignOut);
+  $('signOutBtn').addEventListener('click', (e) => { e.preventDefault(); onSignOut(); });
   $('jobForm').addEventListener('submit', onJobSubmit);
-  $('closeLeadsModal').addEventListener('click', closeLeadsCart);
-  $('leadsModal').addEventListener('click', (e) => { if (e.target.id === 'leadsModal') closeLeadsCart(); });
+}
+
+function go(view) {
+  $('view-history').style.display = view === 'history' ? 'block' : 'none';
+  $('view-leads').style.display = view === 'leads' ? 'block' : 'none';
+  $('view-cockpit').style.display = view === 'cockpit' ? 'block' : 'none';
+  ['history', 'leads', 'cockpit'].forEach((v) => {
+    $('tab-' + v).classList.toggle('active', v === view);
+    document.querySelector('[data-nav="' + v + '"]').classList.toggle('active', v === view);
+  });
+}
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg || 'Copied';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
 }
 
 function onSignOut() {
@@ -66,6 +81,8 @@ function enterDashboard(email) {
   activeEmail = email;
   $('userEmailLabel').textContent = email;
   $('userAvatar').textContent = email.slice(0, 2).toUpperCase();
+  const domain = (email.split('@')[1] || '').trim();
+  if (domain) $('verifiedDomainLabel').textContent = domain + ' verified';
 
   refreshTaskList();
   listTimer = setInterval(refreshTaskList, 8000);
@@ -76,6 +93,7 @@ async function refreshTaskList() {
     const res = await fetch(statusEndpoint + '?email=' + encodeURIComponent(activeEmail));
     const data = await res.json();
     if (!data || !Array.isArray(data.tasks)) return;
+    lastTasks = data.tasks;
     renderTaskList(data.tasks);
 
     if (!activeJobId) {
@@ -88,50 +106,67 @@ async function refreshTaskList() {
 }
 
 function renderTaskList(tasks) {
-  const list = $('taskList');
+  const body = $('historyBody');
+
+  // metrics + tab/nav counts derived straight from the real task list
+  const total = tasks.length;
+  const doneTasks = tasks.filter(t => t.status === 'done');
+  const processingTasks = tasks.filter(t => t.status === 'processing');
+  const delivered = doneTasks.reduce((sum, t) => sum + (Number(t.lead_count) || 0), 0);
+  $('metricTotal').textContent = String(total);
+  $('metricDelivered').textContent = String(delivered);
+  $('metricDeliveredSub').textContent = 'Across ' + doneTasks.length + ' completed run' + (doneTasks.length === 1 ? '' : 's');
+  $('metricProcessing').textContent = String(processingTasks.length);
+  $('tabCountHistory').textContent = String(total);
+  $('navCountHistory').textContent = String(total);
+
   if (!tasks.length) {
-    list.innerHTML = '<div class="empty-hint">No runs yet — start your first search above.</div>';
+    body.innerHTML = '<tr><td colspan="6"><div class="empty-hint">No runs yet — start your first search from "New Search".</div></td></tr>';
     return;
   }
-  list.innerHTML = tasks.map(t => {
-    let badge;
-    if (t.status === 'stopped') badge = '<span class="badge stopped">Stopped</span>';
-    else if (t.status === 'done') badge = '<span class="badge done">Done</span>';
-    else badge = '<span class="badge processing">Processing</span>';
 
-    const viewBtn = (t.status === 'done' || t.status === 'stopped')
-      ? `<button class="view-leads-btn" data-job-id="${escapeAttr(t.job_id)}">View Leads</button>`
-      : '';
-    const stopBtn = t.status === 'processing'
-      ? `<button class="stop-btn" data-job-id="${escapeAttr(t.job_id)}">Stop</button>`
-      : '';
-    const deleteBtn = `<button class="delete-btn" data-job-id="${escapeAttr(t.job_id)}">Delete</button>`;
-    return `
-      <div class="task-row">
-        <div class="t-main">
-          <div class="t-icp">${escapeHtml(t.stage || 'Lead search')} &middot; ${t.lead_count || 0} leads</div>
-          <div class="t-stage">${escapeHtml(new Date(t.created_at).toLocaleString())}</div>
-        </div>
-        <div class="t-right">${badge}${viewBtn}${stopBtn}${deleteBtn}</div>
-      </div>`;
+  body.innerHTML = tasks.map(t => {
+    let statusPill, reportCell, actionsCell;
+    const when = new Date(t.created_at);
+    const dateStr = isNaN(when) ? '' : when.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = isNaN(when) ? '' : when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
+    if (t.status === 'stopped') {
+      statusPill = '<span class="status-pill stopped">&#9632; Stopped</span>';
+    } else if (t.status === 'done') {
+      statusPill = '<span class="status-pill done">&#10003; Done</span>';
+    } else {
+      statusPill = '<span class="status-pill processing">&#9679; ' + escapeHtml(t.stage || 'Researching') + '</span>';
+    }
+
+    if (t.status === 'done' || t.status === 'stopped') {
+      reportCell = '<button class="btn-mini" data-view-job="' + escapeAttr(t.job_id) + '">&#128202; View</button>';
+      actionsCell = '<button class="btn-mini primary" data-view-job="' + escapeAttr(t.job_id) + '">View leads</button><button class="btn-mini danger" data-delete-job="' + escapeAttr(t.job_id) + '">Delete</button>';
+    } else {
+      reportCell = '<span class="cell-sub">Not ready yet</span>';
+      actionsCell = '<button class="btn-mini" data-stop-job="' + escapeAttr(t.job_id) + '">Stop</button><button class="btn-mini danger" data-delete-job="' + escapeAttr(t.job_id) + '">Delete</button>';
+    }
+
+    return '<tr>' +
+      '<td><div class="cell-date">' + escapeHtml(dateStr) + '</div><div class="cell-sub">' + escapeHtml(timeStr) + '</div></td>' +
+      '<td><div style="font-weight:600;color:var(--ink);">' + escapeHtml(t.stage || 'Lead search') + '</div><div class="cell-sub">' + escapeHtml(String(t.lead_count || 0)) + ' leads requested</div></td>' +
+      '<td><span class="num" style="font-weight:700;color:var(--ink);">' + escapeHtml(String(t.lead_count || 0)) + '</span></td>' +
+      '<td>' + statusPill + '</td>' +
+      '<td>' + reportCell + '</td>' +
+      '<td class="row-actions">' + actionsCell + '</td>' +
+      '</tr>';
   }).join('');
 
-  list.querySelectorAll('.view-leads-btn').forEach(btn => {
-    btn.addEventListener('click', () => openLeadsCart(btn.dataset.jobId));
-  });
-  list.querySelectorAll('.stop-btn').forEach(btn => {
-    btn.addEventListener('click', () => onStopClick(btn.dataset.jobId));
-  });
-  list.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', () => onDeleteClick(btn.dataset.jobId));
-  });
+  body.querySelectorAll('[data-view-job]').forEach(btn => btn.addEventListener('click', () => viewJobLeads(btn.dataset.viewJob)));
+  body.querySelectorAll('[data-stop-job]').forEach(btn => btn.addEventListener('click', () => onStopClick(btn.dataset.stopJob)));
+  body.querySelectorAll('[data-delete-job]').forEach(btn => btn.addEventListener('click', () => onDeleteClick(btn.dataset.deleteJob)));
 }
 
 async function onStopClick(jobId) {
   if (!confirm('Stop this run? Leads found so far will still be saved to the report.')) return;
   try {
     await fetch(stopEndpoint + '?job_id=' + encodeURIComponent(jobId));
-    if (activeJobId === jobId) $('liveStage').textContent = 'Stopping...';
+    if (activeJobId === jobId) $('leadsViewSub').textContent = 'Stopping…';
     refreshTaskList();
   } catch (err) {
     console.error('stopJob failed', err);
@@ -144,7 +179,6 @@ async function onDeleteClick(jobId) {
     await fetch(deleteEndpoint + '?job_id=' + encodeURIComponent(jobId));
     if (activeJobId === jobId) {
       stopPolling();
-      $('livePanel').hidden = true;
     }
     refreshTaskList();
   } catch (err) {
@@ -163,7 +197,7 @@ async function onJobSubmit(e) {
 
   const btn = $('btnSubmit');
   btn.disabled = true;
-  btn.textContent = 'Starting...';
+  btn.textContent = 'Starting…';
 
   try {
     const params = new URLSearchParams();
@@ -186,7 +220,7 @@ async function onJobSubmit(e) {
       $('formCount').value = 5;
       $('formMinIcp').value = 90;
       $('formDm').checked = true;
-      $('formMaxli').checked = true;
+      toast('Run started — watch it fill in below');
       startLiveRun(resData.job_id, count);
       refreshTaskList();
     }
@@ -194,8 +228,45 @@ async function onJobSubmit(e) {
     console.error('submit failed', err);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Run Search →';
+    btn.textContent = 'Start research run →';
   }
+}
+
+function skeletonCardHTML(idx) {
+  return '<div class="lead-card lead-card-blur" id="leadCard_' + idx + '">' +
+    '<div class="blur-fill">' +
+      '<div class="lead-top"><div class="lead-avatar">&middot;&middot;</div><div><h4 class="lead-name">Researching company</h4><p class="lead-role">Verifying role &bull; Company</p><span class="tenure-badge">&#10003; Current role verified</span></div></div>' +
+      '<div class="firmo-strip"><div>Domain <b>&mdash;</b></div><div>Headcount <b>&mdash;</b></div><div>Revenue <b>&mdash;</b></div></div>' +
+      '<div class="trigger-box"><div class="trigger-label">Verified buying trigger</div>Gathering evidence from independent sources before this is shown.</div>' +
+      '<div class="hook-box">A tailored opening line will appear here once verified.</div>' +
+      '<div class="lead-foot"><span class="icp-chip">ICP &mdash;</span><span class="li-link">LinkedIn &rarr;</span></div>' +
+    '</div>' +
+    '<div class="blur-tag"><div class="blur-tag-pill"><span class="mini-spin"></span>Verifying&hellip;</div></div>' +
+  '</div>';
+}
+
+function realCardInner(n) {
+  const avatar = n.photo
+    ? '<img class="lead-avatar" src="' + escapeAttr(n.photo) + '" alt="">'
+    : '<div class="lead-avatar">' + escapeHtml(initialsOf(n.name)) + '</div>';
+  const firmo = '<div class="firmo-strip"><div>Domain <b>' + escapeHtml(n.domain || '—') + '</b></div><div>Headcount <b>' + escapeHtml(n.headcount || '—') + '</b></div><div>Revenue <b>' + escapeHtml(n.revenue || '—') + '</b></div></div>';
+  const triggerText = n.trigger || n.hook || 'No buying trigger recorded for this lead.';
+  const hookText = n.hook || n.trigger || '';
+  const hookBox = hookText
+    ? '<div class="hook-box"><button class="btn-copy" data-copy-hook="' + escapeAttr(hookText) + '">Copy</button>"' + escapeHtml(hookText) + '"</div>'
+    : '';
+  const liLink = n.li
+    ? '<a class="li-link" href="' + escapeAttr(n.li) + '" target="_blank" rel="noopener">LinkedIn &rarr;</a>'
+    : '<span class="li-link" style="color:var(--ink-muted);">No LinkedIn found</span>';
+  const icpChip = n.icp ? '<span class="icp-chip">ICP ' + escapeHtml(String(n.icp)) + '</span>' : '<span class="icp-chip">ICP —</span>';
+
+  return '<div class="lead-top">' + avatar +
+      '<div><h4 class="lead-name">' + escapeHtml(n.name || 'Decision maker unavailable') + '</h4><p class="lead-role">' + escapeHtml([n.title, n.company].filter(Boolean).join(' • ')) + '</p><span class="tenure-badge">&#10003; Current role verified</span></div>' +
+    '</div>' +
+    firmo +
+    '<div class="trigger-box"><div class="trigger-label">Verified buying trigger</div>' + escapeHtml(triggerText) + '</div>' +
+    hookBox +
+    '<div class="lead-foot">' + icpChip + liLink + '</div>';
 }
 
 function startLiveRun(jobId, targetCount) {
@@ -203,33 +274,16 @@ function startLiveRun(jobId, targetCount) {
   activeJobId = jobId;
   revealedCount = 0;
 
-  const panel = $('livePanel');
-  panel.hidden = false;
-  $('liveStage').textContent = 'Starting...';
-  $('liveProgress').style.width = '0%';
+  go('leads');
+  $('leadsViewTitle').textContent = 'Verified leads — run in progress';
+  $('leadsViewSub').textContent = 'Cards sharpen one by one as each candidate clears website, trigger and LinkedIn verification.';
+  $('leadsSheetLink').style.visibility = 'hidden';
 
   const grid = $('cardsGrid');
   grid.innerHTML = '';
-  for (let i = 0; i < targetCount; i++) {
-    const card = document.createElement('div');
-    card.className = 'lead-card blurry';
-    card.id = 'leadCard_' + i;
-    card.innerHTML = `
-      <div class="scan-laser"></div>
-      <div class="icp-badge">--</div>
-      <div class="card-content">
-        <div class="lc-top">
-          <div class="lc-avatar">?</div>
-          <div class="lc-info">
-            <div class="company">Researching...</div>
-            <div class="dm">-</div>
-          </div>
-        </div>
-        <div class="meta">-</div>
-        <div class="lc-trigger"></div>
-      </div>`;
-    grid.appendChild(card);
-  }
+  for (let i = 0; i < targetCount; i++) grid.insertAdjacentHTML('beforeend', skeletonCardHTML(i));
+  $('tabCountLeads').textContent = '0/' + targetCount;
+  $('navCountLeads').textContent = '0/' + targetCount;
 
   pollTimer = setInterval(() => pollJobStatus(targetCount), 3000);
   pollJobStatus(targetCount);
@@ -241,35 +295,35 @@ async function pollJobStatus(targetCount) {
     const res = await fetch(statusEndpoint + '?job_id=' + encodeURIComponent(activeJobId));
     const data = await res.json();
 
-    if (data.stage) $('liveStage').textContent = data.stage;
+    if (data.stage) $('leadsViewSub').textContent = data.stage;
 
     const allLeads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
     const verifiedLeads = allLeads.filter(l => l && String(l.dm_name || l.name || '').trim());
     while (revealedCount < verifiedLeads.length && revealedCount < targetCount) {
       revealCard(revealedCount, verifiedLeads[revealedCount]);
       revealedCount++;
+      $('tabCountLeads').textContent = revealedCount + '/' + targetCount;
+      $('navCountLeads').textContent = revealedCount + '/' + targetCount;
     }
-    const pct = Math.min(100, Math.round((revealedCount / targetCount) * 100));
-    $('liveProgress').style.width = pct + '%';
 
     if (data.status === 'done' || data.status === 'stopped') {
       stopPolling();
       for (let i = revealedCount; i < targetCount; i++) {
         const card = document.getElementById('leadCard_' + i);
-        if (card) card.classList.remove('blurry');
+        if (card) card.remove();
       }
-      $('liveStage').textContent = data.status === 'stopped' ? 'Stopped by user' : 'Done — your report is ready';
+      $('leadsViewTitle').textContent = 'Verified leads — latest run';
+      $('leadsViewSub').textContent = data.status === 'stopped'
+        ? 'Stopped by user — showing what was verified before it stopped.'
+        : 'Full profile per lead: current-role check, firmographics, the dated trigger behind the outreach, and a ready opener.';
+      $('tabCountLeads').textContent = String(revealedCount);
+      $('navCountLeads').textContent = String(revealedCount);
       if (data.sheet_url) {
-        const link = document.createElement('a');
+        const link = $('leadsSheetLink');
         link.href = data.sheet_url;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.className = 'sheet-link';
-        link.style.display = 'block';
-        link.style.marginTop = '14px';
-        link.textContent = 'Open full report (Google Sheet) →';
-        $('livePanel').appendChild(link);
+        link.style.visibility = 'visible';
       }
+      toast(data.status === 'stopped' ? 'Run stopped' : 'Report ready — Google Sheet generated');
       refreshTaskList();
     }
   } catch (err) {
@@ -281,76 +335,61 @@ function revealCard(idx, lead) {
   const card = document.getElementById('leadCard_' + idx);
   if (!card) return;
   const n = normalizeLead(lead);
-  card.classList.remove('blurry');
-  const avatarEl = card.querySelector('.lc-avatar');
-  if (avatarEl) {
-    if (n.photo) {
-      avatarEl.outerHTML = `<img class="lc-avatar" src="${escapeAttr(n.photo)}" alt="">`;
-    } else {
-      avatarEl.textContent = initialsOf(n.name);
-    }
-  }
-  card.querySelector('.company').textContent = n.company || 'Unknown company';
-  card.querySelector('.dm').textContent = [n.name, n.title].filter(Boolean).join(' — ') || 'Decision maker unavailable';
-  card.querySelector('.meta').textContent = n.location || n.domain || '';
-  const triggerEl = card.querySelector('.lc-trigger');
-  if (triggerEl) triggerEl.textContent = n.trigger || n.hook || '';
-  const badge = card.querySelector('.icp-badge');
-  if (badge) badge.textContent = n.icp ? (n.icp + '%') : '';
-  if (n.li) {
-    card.style.cursor = 'pointer';
-    card.onclick = () => window.open(n.li, '_blank', 'noopener');
-  }
+  card.className = 'lead-card just-revealed';
+  card.innerHTML = realCardInner(n);
+  wireCopyButtons(card);
 }
 
-async function openLeadsCart(jobId) {
-  const modal = $('leadsModal');
-  $('modalSheetLink').innerHTML = '';
-  $('modalLeadsList').innerHTML = '<div class="empty-hint">Loading...</div>';
-  modal.hidden = false;
+function wireCopyButtons(scope) {
+  (scope || document).querySelectorAll('[data-copy-hook]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.copyHook;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('Hook copied to clipboard');
+      } catch (e) {
+        toast('Could not copy — select the text manually');
+      }
+    });
+  });
+}
+
+async function viewJobLeads(jobId) {
+  go('leads');
+  stopPolling();
+  $('leadsViewTitle').textContent = 'Verified leads — loading run…';
+  $('leadsViewSub').textContent = 'Fetching this run’s verified leads.';
+  $('leadsSheetLink').style.visibility = 'hidden';
+  const grid = $('cardsGrid');
+  grid.innerHTML = '<div class="empty-hint">Loading…</div>';
+
   try {
     const res = await fetch(statusEndpoint + '?job_id=' + encodeURIComponent(jobId));
     const data = await res.json();
-    if (data.sheet_url) {
-      $('modalSheetLink').innerHTML = `<a href="${escapeAttr(data.sheet_url)}" target="_blank" rel="noopener">Open full report (Google Sheet) &rarr;</a>`;
-    }
     const leads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
+
+    $('leadsViewTitle').textContent = 'Verified leads — ' + (data.status === 'stopped' ? 'stopped run' : 'completed run');
+    $('leadsViewSub').textContent = 'Full profile per lead: current-role check, firmographics, the dated trigger behind the outreach, and a ready opener.';
+    $('tabCountLeads').textContent = String(leads.length);
+    $('navCountLeads').textContent = String(leads.length);
+
+    if (data.sheet_url) {
+      const link = $('leadsSheetLink');
+      link.href = data.sheet_url;
+      link.style.visibility = 'visible';
+    }
+
     if (!leads.length) {
-      $('modalLeadsList').className = '';
-      $('modalLeadsList').innerHTML = '<div class="empty-hint">No lead details were saved for this run — open the Google Sheet above for the full list.</div>';
+      grid.innerHTML = '<div class="empty-hint">No lead details were saved for this run.' + (data.sheet_url ? ' Open the Google Sheet above for the full list.' : '') + '</div>';
       return;
     }
-    $('modalLeadsList').className = 'leads-grid';
-    $('modalLeadsList').innerHTML = leads.map(raw => {
-      const n = normalizeLead(raw);
-      const avatar = n.photo
-        ? `<img class="ldc-avatar" src="${escapeAttr(n.photo)}" alt="">`
-        : `<div class="ldc-avatar">${escapeHtml(initialsOf(n.name))}</div>`;
-      const liLink = n.li ? `<a class="ldc-li" href="${escapeAttr(n.li)}" target="_blank" rel="noopener">LinkedIn &rarr;</a>` : '';
-      const insight = (n.trigger || n.hook) ? `<div class="ldc-trigger">${escapeHtml(n.trigger || n.hook)}</div>` : '';
-      return `
-        <div class="lead-detail-card">
-          <div class="ldc-top">
-            ${avatar}
-            <div>
-              <div class="ldc-name">${escapeHtml(n.name || 'Decision maker unavailable')}</div>
-              <div class="ldc-title">${escapeHtml(n.title || '')}</div>
-            </div>
-          </div>
-          <div class="ldc-company">${escapeHtml(n.company)}</div>
-          <div class="ldc-meta">${escapeHtml([n.location, n.domain].filter(Boolean).join(' · '))}</div>
-          ${insight}
-          ${liLink}
-        </div>`;
-    }).join('');
-  } catch (err) {
-    console.error('openLeadsCart failed', err);
-    $('modalLeadsList').innerHTML = '<div class="empty-hint">Failed to load lead details.</div>';
-  }
-}
 
-function closeLeadsCart() {
-  $('leadsModal').hidden = true;
+    grid.innerHTML = leads.map(raw => '<div class="lead-card">' + realCardInner(normalizeLead(raw)) + '</div>').join('');
+    wireCopyButtons(grid);
+  } catch (err) {
+    console.error('viewJobLeads failed', err);
+    grid.innerHTML = '<div class="empty-hint">Failed to load lead details.</div>';
+  }
 }
 
 function stopPolling() {
@@ -360,7 +399,7 @@ function stopPolling() {
 }
 
 function escapeHtml(str) {
-  return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 function escapeAttr(str) { return escapeHtml(str); }
 
