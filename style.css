@@ -71,7 +71,7 @@ p.sub { font-size: 13.5px; color: #64748b; line-height: 1.5; margin-bottom: 22px
 
 /* ---------- Leads modal ---------- */
 .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-.modal-box { background: #fff; border-radius: 16px; max-width: 720px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 26px; }
+.modal-box { background: #fff; border-radius: 16px; max-width: 900px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 26px; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .modal-sheet-link { margin-bottom: 18px; }
 .modal-sheet-link a { display: inline-block; font-size: 13px; font-weight: 600; color: #2563eb; text-decoration: none; background: #eff6ff; padding: 8px 14px; border-radius: 8px; }
@@ -83,3 +83,14 @@ p.sub { font-size: 13.5px; color: #64748b; line-height: 1.5; margin-bottom: 22px
 .lead-row .lr-company { font-size: 12.5px; color: #334155; margin-top: 8px; font-weight: 600; }
 .lead-row .lr-meta { font-size: 11.5px; color: #94a3b8; margin-top: 3px; }
 .lead-row .lr-li { font-size: 12px; font-weight: 600; color: #2563eb; text-decoration: none; white-space: nowrap; }
+
+.leads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.lead-detail-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: #f8fafc; }
+.ldc-top { display: flex; align-items: center; gap: 10px; }
+.ldc-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #0f172a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.ldc-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.ldc-title { font-size: 12px; color: #64748b; margin-top: 2px; }
+.ldc-company { font-size: 12.5px; font-weight: 600; color: #334155; }
+.ldc-meta { font-size: 11.5px; color: #94a3b8; }
+.ldc-trigger { font-size: 11.5px; color: #475569; font-style: italic; line-height: 1.4; }
+.ldc-li { align-self: flex-start; font-size: 12px; font-weight: 600; color: #2563eb; text-decoration: none; margin-top: 2px; }

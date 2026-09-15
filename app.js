@@ -30,9 +30,15 @@ function normalizeLead(l) {
     title: l.title || l.dm_title || '',
     li: l.li || l.dm_linkedin || '',
     location: l.location || '',
-    trigger: l.trigger || l.hook || '',
-    icp: l.icp_score || ''
+    trigger: l.trigger || '',
+    hook: l.hook || '',
+    icp: l.icp_score || '',
+    photo: l.photo || ''
   };
+}
+
+function initialsOf(name) {
+  return (name || '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 }
 
 function init() {
@@ -281,23 +287,31 @@ async function openLeadsCart(jobId) {
     }
     const leads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
     if (!leads.length) {
-      $('modalLeadsList').innerHTML = '<div class="empty-hint">No lead details available for this run.</div>';
+      $('modalLeadsList').className = '';
+      $('modalLeadsList').innerHTML = '<div class="empty-hint">No lead details were saved for this run — open the Google Sheet above for the full list.</div>';
       return;
     }
+    $('modalLeadsList').className = 'leads-grid';
     $('modalLeadsList').innerHTML = leads.map(raw => {
       const n = normalizeLead(raw);
-      const liLink = n.li ? `<a class="lr-li" href="${escapeAttr(n.li)}" target="_blank" rel="noopener">LinkedIn &rarr;</a>` : '';
+      const avatar = n.photo
+        ? `<img class="ldc-avatar" src="${escapeAttr(n.photo)}" alt="">`
+        : `<div class="ldc-avatar">${escapeHtml(initialsOf(n.name))}</div>`;
+      const liLink = n.li ? `<a class="ldc-li" href="${escapeAttr(n.li)}" target="_blank" rel="noopener">LinkedIn &rarr;</a>` : '';
+      const insight = (n.trigger || n.hook) ? `<div class="ldc-trigger">${escapeHtml(n.trigger || n.hook)}</div>` : '';
       return `
-        <div class="lead-row">
-          <div class="lr-top">
+        <div class="lead-detail-card">
+          <div class="ldc-top">
+            ${avatar}
             <div>
-              <div class="lr-name">${escapeHtml(n.name || 'Decision maker unavailable')}</div>
-              <div class="lr-title">${escapeHtml(n.title || '')}</div>
+              <div class="ldc-name">${escapeHtml(n.name || 'Decision maker unavailable')}</div>
+              <div class="ldc-title">${escapeHtml(n.title || '')}</div>
             </div>
-            ${liLink}
           </div>
-          <div class="lr-company">${escapeHtml(n.company)}</div>
-          <div class="lr-meta">${escapeHtml([n.location, n.domain].filter(Boolean).join(' · '))}</div>
+          <div class="ldc-company">${escapeHtml(n.company)}</div>
+          <div class="ldc-meta">${escapeHtml([n.location, n.domain].filter(Boolean).join(' · '))}</div>
+          ${insight}
+          ${liLink}
         </div>`;
     }).join('');
   } catch (err) {
