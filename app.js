@@ -463,8 +463,9 @@ async function viewJobLeads(jobId) {
 
     $('leadsRunPicker').style.display = lastTasks.filter(t => t.status === 'done' || t.status === 'stopped').length > 1 ? 'flex' : 'none';
     refreshRunPickerOptions();
-    const when = new Date(data.created_at || Date.now());
-    $('leadsRunPickerLabel').textContent = (isNaN(when) ? '' : when.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })) + ' · ' + leads.length + ' leads';
+    const matchingTask = lastTasks.find(t => t.job_id === jobId);
+    const when = matchingTask ? new Date(matchingTask.created_at) : null;
+    $('leadsRunPickerLabel').textContent = (when && !isNaN(when) ? when.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : 'This run') + ' · ' + leads.length + ' leads';
 
     if (data.sheet_url) {
       const link = $('leadsSheetLink');
