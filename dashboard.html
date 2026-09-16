@@ -20,6 +20,7 @@
     <div class="nav-label">Workspace</div>
     <ul class="nav-list">
       <li><button class="nav-item active" data-nav="history" onclick="go('history')"><span class="nav-item-inner"><span class="nav-icon">&#9776;</span>Run History</span><span class="nc" id="navCountHistory">0</span></button></li>
+      <li><button class="nav-item" data-nav="current" onclick="go('current')"><span class="nav-item-inner"><span class="live-dot" id="navLiveDot" style="display:none;"></span><span class="nav-icon" id="navCurrentIcon">&#9776;</span>Current Run</span></button></li>
       <li><button class="nav-item" data-nav="leads" onclick="go('leads')"><span class="nav-item-inner"><span class="nav-icon">&#9673;</span>Verified Leads</span><span class="nc" id="navCountLeads">0</span></button></li>
       <li><button class="nav-item" data-nav="cockpit" onclick="go('cockpit')"><span class="nav-item-inner"><span class="nav-icon">&#9889;</span>New Search</span></button></li>
     </ul>
@@ -70,6 +71,7 @@
 
     <div class="tabs">
       <button class="tab-btn active" id="tab-history" onclick="go('history')">Run History <span class="tab-count" id="tabCountHistory">0</span></button>
+      <button class="tab-btn" id="tab-current" onclick="go('current')">Current Run <span class="live-dot" id="tabLiveDot" style="display:none;"></span></button>
       <button class="tab-btn" id="tab-leads" onclick="go('leads')">Verified Leads <span class="tab-count" id="tabCountLeads">0</span></button>
       <button class="tab-btn" id="tab-cockpit" onclick="go('cockpit')">New Search</button>
     </div>
@@ -93,6 +95,21 @@
       </div>
     </div>
 
+    <!-- ============ VIEW: CURRENT RUN ============ -->
+    <div id="view-current" style="display:none;">
+      <div class="view-head">
+        <div>
+          <h3 class="view-title" id="currentViewTitle">Current run</h3>
+          <p class="view-sub" id="currentViewSub">Cards sharpen one by one as each candidate clears verification.</p>
+        </div>
+        <span class="live-badge" id="currentLiveBadge" style="display:none;"><span class="d"></span><span id="currentLiveBadgeText">Live</span></span>
+      </div>
+      <div class="progress-track" id="currentProgressTrack" style="display:none;"><div class="progress-fill" id="currentProgressFill" style="width:0%;"></div></div>
+      <div class="cards-grid" id="currentRunGrid">
+        <div class="empty-hint">No run in progress right now — start one from New Search.</div>
+      </div>
+    </div>
+
     <!-- ============ VIEW: LEADS GALLERY ============ -->
     <div id="view-leads" style="display:none;">
       <div class="view-head">
@@ -101,6 +118,11 @@
           <p class="view-sub" id="leadsViewSub">Pick a run from history, or start a new search, to see verified lead cards here.</p>
         </div>
         <a href="#" class="btn-mini primary" id="leadsSheetLink" style="visibility:hidden;" target="_blank" rel="noopener">&#128202; Open Google Sheet</a>
+      </div>
+
+      <div class="select-row" id="leadsRunPicker" style="display:none;">
+        Showing run: <b id="leadsRunPickerLabel">&mdash;</b>
+        <select id="leadsRunSelect"></select>
       </div>
 
       <div class="cards-grid" id="cardsGrid">
@@ -206,13 +228,13 @@
           <div class="explain-card">
             <div class="explain-head">What happens when you submit</div>
             <div class="explain-step"><div class="step-num">1</div><div><div class="step-title">Job queued instantly</div><div class="step-desc">A run record is created right away — it appears in Run History as "Researching" within a second, with a Stop and Delete option from the start.</div></div></div>
-            <div class="explain-step"><div class="step-num">2</div><div><div class="step-title">Live research, card by card</div><div class="step-desc">As each company clears website, trigger and LinkedIn verification, its card appears here in Verified Leads — usually the first one within a couple of minutes.</div></div></div>
+            <div class="explain-step"><div class="step-num">2</div><div><div class="step-title">Live research, card by card</div><div class="step-desc">As each company clears website, trigger and LinkedIn verification, its card appears in Current Run — usually the first one within a couple of minutes.</div></div></div>
             <div class="explain-step"><div class="step-num">3</div><div><div class="step-title">Stop or let it finish</div><div class="step-desc">Stop halts research immediately and keeps whatever verified so far; otherwise it keeps going until your target count or its retry budget is reached.</div></div></div>
           </div>
           <div class="explain-card">
             <div class="explain-head">When the report is ready</div>
             <div class="explain-step"><div class="step-num">4</div><div><div class="step-title">Google Sheet is generated</div><div class="step-desc">A two-tab sheet (Leads + Summary) is created and shared as anyone-with-link, with the run's ICP notes and verification method recorded.</div></div></div>
-            <div class="explain-step"><div class="step-num">5</div><div><div class="step-title">Run marked Done</div><div class="step-desc">Status flips to "Done" in Run History, an "Open sheet" button appears next to it, and it stays there permanently as your record.</div></div></div>
+            <div class="explain-step"><div class="step-num">5</div><div><div class="step-title">Run marked Done</div><div class="step-desc">Status flips to "Done" in Run History, and the run moves to Verified Leads where it stays permanently as your record.</div></div></div>
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ let listTimer = null;
 let activeJobId = null;
 let revealedCount = 0;
 let lastTasks = [];
+let viewedLeadsJobId = null;
 
 function getStoredEmail() {
   try { return localStorage.getItem('lacleo_auth_user') || ''; } catch (e) { return ''; }
@@ -33,7 +34,10 @@ function normalizeLead(l) {
     trigger: l.trigger || '',
     hook: l.hook || '',
     icp: l.icp_score || l.icp || '',
-    photo: l.photo || ''
+    photo: l.photo || '',
+    reason: l.reason || '',
+    sources: Array.isArray(l.sources) ? l.sources : [],
+    secondary: Array.isArray(l.secondary) ? l.secondary : []
   };
 }
 
@@ -51,16 +55,22 @@ function init() {
 
   $('signOutBtn').addEventListener('click', (e) => { e.preventDefault(); onSignOut(); });
   $('jobForm').addEventListener('submit', onJobSubmit);
+  $('leadsRunSelect').addEventListener('change', (e) => { if (e.target.value) viewJobLeads(e.target.value); });
 }
 
 function go(view) {
   $('view-history').style.display = view === 'history' ? 'block' : 'none';
+  $('view-current').style.display = view === 'current' ? 'block' : 'none';
   $('view-leads').style.display = view === 'leads' ? 'block' : 'none';
   $('view-cockpit').style.display = view === 'cockpit' ? 'block' : 'none';
-  ['history', 'leads', 'cockpit'].forEach((v) => {
+  ['history', 'current', 'leads', 'cockpit'].forEach((v) => {
     $('tab-' + v).classList.toggle('active', v === view);
     document.querySelector('[data-nav="' + v + '"]').classList.toggle('active', v === view);
   });
+  if (view === 'leads' && !viewedLeadsJobId) {
+    const firstDone = lastTasks.find(t => t.status === 'done' || t.status === 'stopped');
+    if (firstDone) viewJobLeads(firstDone.job_id);
+  }
 }
 
 function toast(msg) {
@@ -103,10 +113,11 @@ async function refreshTaskList() {
     if (!data || !Array.isArray(data.tasks)) return;
     lastTasks = data.tasks;
     renderTaskList(data.tasks);
+    refreshRunPickerOptions();
 
     if (!activeJobId) {
       const inFlight = data.tasks.find(t => t.status === 'processing');
-      if (inFlight) startLiveRun(inFlight.job_id, inFlight.lead_count || 5);
+      if (inFlight) startLiveRun(inFlight.job_id, inFlight.lead_count || 5, false);
     }
   } catch (err) {
     console.error('refreshTaskList failed', err);
@@ -116,7 +127,6 @@ async function refreshTaskList() {
 function renderTaskList(tasks) {
   const body = $('historyBody');
 
-  // metrics + tab/nav counts derived straight from the real task list
   const total = tasks.length;
   const doneTasks = tasks.filter(t => t.status === 'done');
   const processingTasks = tasks.filter(t => t.status === 'processing');
@@ -127,6 +137,12 @@ function renderTaskList(tasks) {
   $('metricProcessing').textContent = String(processingTasks.length);
   $('tabCountHistory').textContent = String(total);
   $('navCountHistory').textContent = String(total);
+  $('tabCountLeads').textContent = String(doneTasks.length + tasks.filter(t => t.status === 'stopped').length);
+  $('navCountLeads').textContent = $('tabCountLeads').textContent;
+
+  const hasLive = processingTasks.length > 0;
+  $('navLiveDot').style.display = hasLive ? 'inline-block' : 'none';
+  $('tabLiveDot').style.display = hasLive ? 'inline-block' : 'none';
 
   if (!tasks.length) {
     body.innerHTML = '<tr><td colspan="6"><div class="empty-hint">No runs yet — start your first search from "New Search".</div></td></tr>';
@@ -152,7 +168,7 @@ function renderTaskList(tasks) {
       actionsCell = '<button class="btn-mini primary" data-view-job="' + escapeAttr(t.job_id) + '">View leads</button><button class="btn-mini danger" data-delete-job="' + escapeAttr(t.job_id) + '">Delete</button>';
     } else {
       reportCell = '<span class="cell-sub">Not ready yet</span>';
-      actionsCell = '<button class="btn-mini" data-stop-job="' + escapeAttr(t.job_id) + '">Stop</button><button class="btn-mini danger" data-delete-job="' + escapeAttr(t.job_id) + '">Delete</button>';
+      actionsCell = '<button class="btn-mini" data-watch-job="' + escapeAttr(t.job_id) + '">Watch live</button><button class="btn-mini" data-stop-job="' + escapeAttr(t.job_id) + '">Stop</button><button class="btn-mini danger" data-delete-job="' + escapeAttr(t.job_id) + '">Delete</button>';
     }
 
     return '<tr>' +
@@ -165,7 +181,8 @@ function renderTaskList(tasks) {
       '</tr>';
   }).join('');
 
-  body.querySelectorAll('[data-view-job]').forEach(btn => btn.addEventListener('click', () => viewJobLeads(btn.dataset.viewJob)));
+  body.querySelectorAll('[data-view-job]').forEach(btn => btn.addEventListener('click', () => { go('leads'); viewJobLeads(btn.dataset.viewJob); }));
+  body.querySelectorAll('[data-watch-job]').forEach(btn => btn.addEventListener('click', () => go('current')));
   body.querySelectorAll('[data-stop-job]').forEach(btn => btn.addEventListener('click', () => onStopClick(btn.dataset.stopJob)));
   body.querySelectorAll('[data-delete-job]').forEach(btn => btn.addEventListener('click', () => onDeleteClick(btn.dataset.deleteJob)));
 }
@@ -174,7 +191,7 @@ async function onStopClick(jobId) {
   if (!confirm('Stop this run? Leads found so far will still be saved to the report.')) return;
   try {
     await fetch(stopEndpoint + '?job_id=' + encodeURIComponent(jobId));
-    if (activeJobId === jobId) $('leadsViewSub').textContent = 'Stopping…';
+    if (activeJobId === jobId) $('currentViewSub').textContent = 'Stopping…';
     refreshTaskList();
   } catch (err) {
     console.error('stopJob failed', err);
@@ -187,6 +204,12 @@ async function onDeleteClick(jobId) {
     await fetch(deleteEndpoint + '?job_id=' + encodeURIComponent(jobId));
     if (activeJobId === jobId) {
       stopPolling();
+      resetCurrentRunView();
+    }
+    if (viewedLeadsJobId === jobId) {
+      viewedLeadsJobId = null;
+      $('cardsGrid').innerHTML = '<div class="empty-hint">No leads to show yet — start a search or open a completed run from Run History.</div>';
+      $('leadsRunPicker').style.display = 'none';
     }
     refreshTaskList();
   } catch (err) {
@@ -251,7 +274,7 @@ async function onJobSubmit(e) {
       $('advancedFields').style.display = 'none';
       $('toggleAdvancedBtn').textContent = '+ Add targeting details (revenue, titles, industry…)';
       toast('Run started — watch it fill in below');
-      startLiveRun(resData.job_id, count);
+      startLiveRun(resData.job_id, count, true);
       refreshTaskList();
     }
   } catch (err) {
@@ -290,30 +313,57 @@ function realCardInner(n) {
     : '<span class="li-link" style="color:var(--ink-muted);">No LinkedIn found</span>';
   const icpChip = n.icp ? '<span class="icp-chip">ICP ' + escapeHtml(String(n.icp)) + '</span>' : '<span class="icp-chip">ICP —</span>';
 
+  const sourcesRow = n.sources.length
+    ? '<div class="sources-row"><span class="sources-label">Sources</span>' + n.sources.map((u, i) => '<a class="source-link" href="' + escapeAttr(u) + '" target="_blank" rel="noopener">' + (i + 1) + ' &#8599;</a>').join('') + '</div>'
+    : '';
+  const reasonBox = n.reason
+    ? '<div class="reason-box"><div class="reason-label">Why this contact</div>' + escapeHtml(n.reason) + '</div>'
+    : '';
+  const secondaryBlock = n.secondary.length
+    ? '<details class="secondary-block"><summary>' + n.secondary.length + ' other contact' + (n.secondary.length === 1 ? '' : 's') + ' at ' + escapeHtml(n.company || 'this company') + '</summary><div class="secondary-list">' +
+      n.secondary.map(s => '<div class="secondary-item"><a href="' + escapeAttr(s.url || '#') + '" target="_blank" rel="noopener">' + escapeHtml(s.name || 'Unknown') + '</a></div>').join('') +
+      '</div></details>'
+    : '';
+
   return '<div class="lead-top">' + avatar +
       '<div><h4 class="lead-name">' + escapeHtml(n.name || 'Decision maker unavailable') + '</h4><p class="lead-role">' + escapeHtml([n.title, n.company].filter(Boolean).join(' • ')) + '</p><span class="tenure-badge">&#10003; Current role verified</span></div>' +
     '</div>' +
     firmo +
     '<div class="trigger-box"><div class="trigger-label">Verified buying trigger</div>' + escapeHtml(triggerText) + '</div>' +
+    sourcesRow +
+    reasonBox +
+    secondaryBlock +
     hookBox +
     '<div class="lead-foot">' + icpChip + liLink + '</div>';
 }
 
-function startLiveRun(jobId, targetCount) {
+function resetCurrentRunView() {
+  $('currentRunGrid').innerHTML = '<div class="empty-hint">No run in progress right now — start one from New Search.</div>';
+  $('currentLiveBadge').style.display = 'none';
+  $('currentProgressTrack').style.display = 'none';
+  $('currentViewTitle').textContent = 'Current run';
+  $('currentViewSub').textContent = 'Cards sharpen one by one as each candidate clears verification.';
+}
+
+function startLiveRun(jobId, targetCount, navigate) {
+  if (activeJobId === jobId && pollTimer) {
+    if (navigate) go('current');
+    return;
+  }
   if (pollTimer) clearInterval(pollTimer);
   activeJobId = jobId;
   revealedCount = 0;
 
-  go('leads');
-  $('leadsViewTitle').textContent = 'Verified leads — run in progress';
-  $('leadsViewSub').textContent = 'Cards sharpen one by one as each candidate clears website, trigger and LinkedIn verification.';
-  $('leadsSheetLink').style.visibility = 'hidden';
+  if (navigate) go('current');
+  $('currentViewTitle').textContent = 'Current run';
+  $('currentViewSub').textContent = 'Cards sharpen one by one as each candidate clears verification.';
+  $('currentLiveBadge').style.display = 'inline-flex';
+  $('currentProgressTrack').style.display = 'block';
+  $('currentProgressFill').style.width = '0%';
 
-  const grid = $('cardsGrid');
+  const grid = $('currentRunGrid');
   grid.innerHTML = '';
   for (let i = 0; i < targetCount; i++) grid.insertAdjacentHTML('beforeend', skeletonCardHTML(i));
-  $('tabCountLeads').textContent = '0/' + targetCount;
-  $('navCountLeads').textContent = '0/' + targetCount;
 
   pollTimer = setInterval(() => pollJobStatus(targetCount), 3000);
   pollJobStatus(targetCount);
@@ -325,15 +375,15 @@ async function pollJobStatus(targetCount) {
     const res = await fetch(statusEndpoint + '?job_id=' + encodeURIComponent(activeJobId));
     const data = await res.json();
 
-    if (data.stage) $('leadsViewSub').textContent = data.stage;
+    if (data.stage) $('currentViewSub').textContent = data.stage;
+    $('currentLiveBadgeText').textContent = revealedCount + ' of ' + targetCount + ' verified';
 
     const allLeads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
     while (revealedCount < allLeads.length && revealedCount < targetCount) {
       revealCard(revealedCount, allLeads[revealedCount]);
       revealedCount++;
-      $('tabCountLeads').textContent = revealedCount + '/' + targetCount;
-      $('navCountLeads').textContent = revealedCount + '/' + targetCount;
     }
+    $('currentProgressFill').style.width = Math.min(100, Math.round((revealedCount / targetCount) * 100)) + '%';
 
     if (data.status === 'done' || data.status === 'stopped') {
       stopPolling();
@@ -341,17 +391,11 @@ async function pollJobStatus(targetCount) {
         const card = document.getElementById('leadCard_' + i);
         if (card) card.remove();
       }
-      $('leadsViewTitle').textContent = 'Verified leads — latest run';
-      $('leadsViewSub').textContent = data.status === 'stopped'
+      $('currentViewTitle').textContent = 'Current run — ' + (data.status === 'stopped' ? 'stopped' : 'complete');
+      $('currentViewSub').textContent = data.status === 'stopped'
         ? 'Stopped by user — showing what was verified before it stopped.'
-        : 'Full profile per lead: current-role check, firmographics, the dated trigger behind the outreach, and a ready opener.';
-      $('tabCountLeads').textContent = String(revealedCount);
-      $('navCountLeads').textContent = String(revealedCount);
-      if (data.sheet_url) {
-        const link = $('leadsSheetLink');
-        link.href = data.sheet_url;
-        link.style.visibility = 'visible';
-      }
+        : 'Run finished. It now also appears in Verified Leads.';
+      $('currentLiveBadge').style.display = 'none';
       toast(data.status === 'stopped' ? 'Run stopped' : 'Report ready — Google Sheet generated');
       refreshTaskList();
     }
@@ -383,9 +427,24 @@ function wireCopyButtons(scope) {
   });
 }
 
+function refreshRunPickerOptions() {
+  const sel = $('leadsRunSelect');
+  const viewable = lastTasks.filter(t => t.status === 'done' || t.status === 'stopped');
+  const prevValue = sel.value;
+  sel.innerHTML = viewable.map(t => {
+    const when = new Date(t.created_at);
+    const label = (isNaN(when) ? '' : when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' + when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })) + ' · ' + (t.lead_count || 0) + ' leads';
+    return '<option value="' + escapeAttr(t.job_id) + '">' + escapeHtml(label) + '</option>';
+  }).join('');
+  if (viewedLeadsJobId && viewable.some(t => t.job_id === viewedLeadsJobId)) {
+    sel.value = viewedLeadsJobId;
+  } else if (prevValue) {
+    sel.value = prevValue;
+  }
+}
+
 async function viewJobLeads(jobId) {
-  go('leads');
-  stopPolling();
+  viewedLeadsJobId = jobId;
   $('leadsViewTitle').textContent = 'Verified leads — loading run…';
   $('leadsViewSub').textContent = 'Fetching this run’s verified leads.';
   $('leadsSheetLink').style.visibility = 'hidden';
@@ -398,9 +457,14 @@ async function viewJobLeads(jobId) {
     const leads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
 
     $('leadsViewTitle').textContent = 'Verified leads — ' + (data.status === 'stopped' ? 'stopped run' : 'completed run');
-    $('leadsViewSub').textContent = 'Full profile per lead: current-role check, firmographics, the dated trigger behind the outreach, and a ready opener.';
+    $('leadsViewSub').textContent = 'Full profile per lead: current-role check, firmographics, sources, why this contact, and other contacts found.';
     $('tabCountLeads').textContent = String(leads.length);
     $('navCountLeads').textContent = String(leads.length);
+
+    $('leadsRunPicker').style.display = lastTasks.filter(t => t.status === 'done' || t.status === 'stopped').length > 1 ? 'flex' : 'none';
+    refreshRunPickerOptions();
+    const when = new Date(data.created_at || Date.now());
+    $('leadsRunPickerLabel').textContent = (isNaN(when) ? '' : when.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })) + ' · ' + leads.length + ' leads';
 
     if (data.sheet_url) {
       const link = $('leadsSheetLink');
