@@ -157,7 +157,7 @@ function renderTaskList(tasks) {
 
     return '<tr>' +
       '<td><div class="cell-date">' + escapeHtml(dateStr) + '</div><div class="cell-sub">' + escapeHtml(timeStr) + '</div></td>' +
-      '<td><div style="font-weight:600;color:var(--ink);">' + escapeHtml(t.stage || 'Lead search') + '</div><div class="cell-sub">' + escapeHtml(String(t.lead_count || 0)) + ' leads requested</div></td>' +
+      '<td><div style="font-weight:600;color:var(--ink);">' + escapeHtml(t.stage || 'Lead search') + '</div><div class="cell-sub">' + escapeHtml(String(t.lead_count || 0)) + ((t.status === 'done' || t.status === 'stopped') ? ' leads delivered' : ' leads requested') + '</div></td>' +
       '<td><span class="num" style="font-weight:700;color:var(--ink);">' + escapeHtml(String(t.lead_count || 0)) + '</span></td>' +
       '<td>' + statusPill + '</td>' +
       '<td>' + reportCell + '</td>' +
@@ -328,9 +328,8 @@ async function pollJobStatus(targetCount) {
     if (data.stage) $('leadsViewSub').textContent = data.stage;
 
     const allLeads = Array.isArray(data.ready_leads) ? data.ready_leads : [];
-    const verifiedLeads = allLeads.filter(l => l && String(l.dm_name || l.name || '').trim());
-    while (revealedCount < verifiedLeads.length && revealedCount < targetCount) {
-      revealCard(revealedCount, verifiedLeads[revealedCount]);
+    while (revealedCount < allLeads.length && revealedCount < targetCount) {
+      revealCard(revealedCount, allLeads[revealedCount]);
       revealedCount++;
       $('tabCountLeads').textContent = revealedCount + '/' + targetCount;
       $('navCountLeads').textContent = revealedCount + '/' + targetCount;
