@@ -232,6 +232,7 @@ async function onJobSubmit(e) {
   const targetTitles = $('targetTitles').value.trim();
   const industry = $('industryIn').value.trim();
   const hqRegion = $('hqIn').value.trim();
+  const existingCustomers = $('existingCustomersIn').value.trim();
 
   if (!website && !icpText) {
     toast('Give a website, an ICP description, or both');
@@ -258,6 +259,7 @@ async function onJobSubmit(e) {
     if (targetTitles) params.append('target_titles', targetTitles);
     if (industry) params.append('industry', industry);
     if (hqRegion) params.append('hq_region', hqRegion);
+    if (existingCustomers) params.append('existing_customers', existingCustomers);
     params.append('format', 'json');
 
     const resp = await fetch(submitEndpoint, {
