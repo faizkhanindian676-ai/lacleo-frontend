@@ -225,6 +225,7 @@ async function onJobSubmit(e) {
   const minicp = parseInt($('formMinIcp').value, 10) || 90;
   const dm = $('formDm').checked;
   const maxli = $('formMaxli').checked;
+  const liveSearch = $('formLiveSearch').checked;
   const revMin = $('revMin').value.trim();
   const revMax = $('revMax').value.trim();
   const hcMin = $('hcMin').value.trim();
@@ -252,6 +253,7 @@ async function onJobSubmit(e) {
     params.append('minicp', minicp);
     if (dm) params.append('dm', 'yes');
     if (maxli) params.append('maxli', 'yes');
+    if (liveSearch) params.append('livesearch', 'yes');
     if (revMin) params.append('revenue_min', revMin);
     if (revMax) params.append('revenue_max', revMax);
     if (hcMin) params.append('headcount_min', hcMin);
